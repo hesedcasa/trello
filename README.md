@@ -26,7 +26,7 @@ $ npm install -g @hesed/trello
 $ trello COMMAND
 running command...
 $ trello (--version)
-@hesed/trello/0.1.0 darwin-arm64 node-v22.14.0
+@hesed/trello/0.1.0 linux-x64 node-v20.20.2
 $ trello --help [COMMAND]
 USAGE
   $ trello COMMAND
@@ -75,11 +75,11 @@ Add Trello authentication
 
 ```
 USAGE
-  $ trello trello auth add [--json] [-k <value>] [-t <value>]
+  $ trello trello auth add -k <value> -t <value> [--json]
 
 FLAGS
-  -k, --key=<value>    Trello API key
-  -t, --token=<value>  Trello API token
+  -k, --key=<value>    (required) Trello API key
+  -t, --token=<value>  (required) Trello API token
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -119,11 +119,11 @@ Update existing authentication
 
 ```
 USAGE
-  $ trello trello auth update [--json] [-k <value>] [-t <value>]
+  $ trello trello auth update -k <value> -t <value> [--json]
 
 FLAGS
-  -k, --key=<value>    Trello API key
-  -t, --token=<value>  Trello API token
+  -k, --key=<value>    (required) Trello API key
+  -t, --token=<value>  (required) Trello API token
 
 GLOBAL FLAGS
   --json  Format output as json.
