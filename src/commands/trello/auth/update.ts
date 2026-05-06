@@ -14,15 +14,18 @@ export default class AuthUpdate extends Command {
   static override examples = ['<%= config.bin %> <%= command.id %>']
   static override flags = {
     key: Flags.string({char: 'k', description: 'Trello API key', required: !process.stdout.isTTY}),
+    profile: Flags.string({char: 'p', default: 'default', description: 'Profile name', required: false}),
     token: Flags.string({char: 't', description: 'Trello API token', required: !process.stdout.isTTY}),
   }
 
   public async run(): Promise<ApiResult | void> {
     const {flags} = await this.parse(AuthUpdate)
+    const profileName = flags.profile
     const configPath = path.join(this.config.configDir, 'trello-config.json')
-    let config
+
+    let raw: Record<string, unknown>
     try {
-      config = await fs.readJSON(configPath)
+      raw = await fs.readJSON(configPath)
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : String(error)
       if (msg.toLowerCase().includes('no such file or directory')) {
@@ -34,32 +37,45 @@ export default class AuthUpdate extends Command {
       return
     }
 
+    let currentProfile: Record<string, unknown> | undefined
+    let existingProfiles: Record<string, unknown> = {}
+
+    if (raw.profiles) {
+      existingProfiles = raw.profiles as Record<string, unknown>
+      currentProfile = existingProfiles[profileName] as Record<string, unknown> | undefined
+    } else if (raw.auth && profileName === 'default') {
+      currentProfile = raw.auth as Record<string, unknown>
+    }
+
+    if (!currentProfile) {
+      this.log(`Profile '${profileName}' not found. Run auth:add instead`)
+      return
+    }
+
     const apiKey =
       flags.key ??
-      (await input({default: config.auth.apiKey, message: 'Trello API key:', prefill: 'tab', required: true}))
+      (await input({default: currentProfile.apiKey as string, message: 'Trello API key:', prefill: 'tab', required: true}))
     const apiToken =
       flags.token ??
-      (await input({default: config.auth.apiToken, message: 'Trello API token:', prefill: 'tab', required: true}))
+      (await input({default: currentProfile.apiToken as string, message: 'Trello API token:', prefill: 'tab', required: true}))
     const answer = await confirm({message: 'Override existing config?'})
 
     if (!answer) {
       return
     }
 
-    const auth = {
-      auth: {
-        apiKey,
-        apiToken,
-      },
+    const profileData = {
+      apiKey,
+      apiToken,
     }
+    const config = {profiles: {...existingProfiles, [profileName]: profileData}}
 
-    await fs.writeJSON(configPath, auth, {
-      mode: 0o600, // owner read/write only
+    await fs.writeJSON(configPath, config, {
+      mode: 0o600,
     })
 
     action.start('Authenticating')
-    config = await fs.readJSON(configPath)
-    const result = await testConnection(config.auth)
+    const result = await testConnection(profileData)
     clearClients()
 
     if (result.success) {
