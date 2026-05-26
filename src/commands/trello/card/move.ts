@@ -1,8 +1,8 @@
 import {Args, Command, Flags} from '@oclif/core'
+import {createProfileManager, formatAsToon} from '@hesed/plugin-lib'
 
-import {readConfig} from '../../../config.js'
-import {formatAsToon} from '../../../format.js'
-import {clearClients, moveCard} from '../../../trello/trello-client.js'
+import {type Config} from '../../../trello/trello-api.js'
+import {clearClients, getClient} from '../../../trello/trello-client.js'
 
 export default class CardMove extends Command {
   static override args = {
@@ -21,10 +21,11 @@ export default class CardMove extends Command {
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(CardMove)
-    const config = await readConfig(this.config.configDir, this.log.bind(this))
-    if (!config) return
+    const pm = createProfileManager<Config>(this.config)
+    const auth = pm.loadAuthConfig()
+    if (!auth) { this.error('Not authenticated. Run trello auth add first.'); return }
 
-    const result = await moveCard(config.auth, args.cardId, args.listId, flags.board)
+    const result = await getClient(auth).moveCard(args.cardId, args.listId, flags.board)
     clearClients()
 
     if (flags.toon) {

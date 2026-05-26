@@ -1,7 +1,8 @@
 import {Args, Command} from '@oclif/core'
+import {createProfileManager} from '@hesed/plugin-lib'
 
-import {readConfig} from '../../../config.js'
-import {clearClients, deleteCardComment} from '../../../trello/trello-client.js'
+import {type Config} from '../../../trello/trello-api.js'
+import {clearClients, getClient} from '../../../trello/trello-client.js'
 
 export default class CommentDelete extends Command {
   /* eslint-disable perfectionist/sort-objects */
@@ -15,10 +16,11 @@ export default class CommentDelete extends Command {
 
   public async run(): Promise<void> {
     const {args} = await this.parse(CommentDelete)
-    const config = await readConfig(this.config.configDir, this.log.bind(this))
-    if (!config) return
+    const pm = createProfileManager<Config>(this.config)
+    const auth = pm.loadAuthConfig()
+    if (!auth) { this.error('Not authenticated. Run trello auth add first.'); return }
 
-    const result = await deleteCardComment(config.auth, args.cardId, args.actionId)
+    const result = await getClient(auth).deleteCardComment(args.cardId, args.actionId)
     clearClients()
 
     this.logJson(result)

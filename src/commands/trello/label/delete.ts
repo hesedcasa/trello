@@ -1,7 +1,8 @@
 import {Args, Command} from '@oclif/core'
+import {createProfileManager} from '@hesed/plugin-lib'
 
-import {readConfig} from '../../../config.js'
-import {clearClients, deleteLabel} from '../../../trello/trello-client.js'
+import {type Config} from '../../../trello/trello-api.js'
+import {clearClients, getClient} from '../../../trello/trello-client.js'
 
 export default class LabelDelete extends Command {
   static override args = {
@@ -12,10 +13,11 @@ export default class LabelDelete extends Command {
 
   public async run(): Promise<void> {
     const {args} = await this.parse(LabelDelete)
-    const config = await readConfig(this.config.configDir, this.log.bind(this))
-    if (!config) return
+    const pm = createProfileManager<Config>(this.config)
+    const auth = pm.loadAuthConfig()
+    if (!auth) { this.error('Not authenticated. Run trello auth add first.'); return }
 
-    const result = await deleteLabel(config.auth, args.labelId)
+    const result = await getClient(auth).deleteLabel(args.labelId)
     clearClients()
 
     this.logJson(result)

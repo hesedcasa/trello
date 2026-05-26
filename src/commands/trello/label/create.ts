@@ -1,8 +1,8 @@
 import {Args, Command, Flags} from '@oclif/core'
+import {createProfileManager, formatAsToon} from '@hesed/plugin-lib'
 
-import {readConfig} from '../../../config.js'
-import {formatAsToon} from '../../../format.js'
-import {clearClients, createLabel} from '../../../trello/trello-client.js'
+import {type Config} from '../../../trello/trello-api.js'
+import {clearClients, getClient} from '../../../trello/trello-client.js'
 
 export default class LabelCreate extends Command {
   /* eslint-disable perfectionist/sort-objects */
@@ -24,10 +24,11 @@ export default class LabelCreate extends Command {
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(LabelCreate)
-    const config = await readConfig(this.config.configDir, this.log.bind(this))
-    if (!config) return
+    const pm = createProfileManager<Config>(this.config)
+    const auth = pm.loadAuthConfig()
+    if (!auth) { this.error('Not authenticated. Run trello auth add first.'); return }
 
-    const result = await createLabel(config.auth, args.boardId, args.name, args.color)
+    const result = await getClient(auth).createLabel(args.boardId, args.name, args.color)
     clearClients()
 
     if (flags.toon) {

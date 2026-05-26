@@ -1,15 +1,9 @@
-import {createAuthAddCommand, type FieldDef} from '@hesed/plugin-lib'
+import {createAuthDeleteCommand} from '@hesed/plugin-lib'
 import {clearClients} from '../../../trello/trello-client.js'
 import {TrelloApi} from '../../../trello/trello-api.js'
 
-const fields: FieldDef[] = [
-  {char: 'k', description: 'API key', masked: true, message: 'API key:', name: 'apiKey'},
-  {char: 't', description: 'API token', masked: true, message: 'API token:', name: 'apiToken'},
-]
-
-export default createAuthAddCommand({
+export default createAuthDeleteCommand({
   clearClients,
-  fields,
   hasHostFlag: false,
   serviceName: 'Trello',
   testConnection: async (auth) => {

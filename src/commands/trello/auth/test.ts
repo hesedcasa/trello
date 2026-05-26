@@ -1,39 +1,23 @@
-import {Command} from '@oclif/core'
-import {action} from '@oclif/core/ux'
+import {createAuthTestCommand, type FieldDef} from '@hesed/plugin-lib'
+import {clearClients} from '../../../trello/trello-client.js'
+import {TrelloApi} from '../../../trello/trello-api.js'
 
-import {readConfig} from '../../../config.js'
-import {ApiResult} from '../../../trello/trello-api.js'
-import {clearClients, testConnection} from '../../../trello/trello-client.js'
+const fields: FieldDef[] = [
+  {char: 'k', description: 'API key', masked: true, message: 'API key:', name: 'apiKey'},
+  {char: 't', description: 'API token', masked: true, message: 'API token:', name: 'apiToken'},
+]
 
-export default class AuthTest extends Command {
-  static override args = {}
-  static override description = 'Test authentication and connection'
-  static override enableJsonFlag = true
-  static override examples = ['<%= config.bin %> <%= command.id %>']
-  static override flags = {}
-
-  public async run(): Promise<ApiResult> {
-    await this.parse(AuthTest)
-    const config = await readConfig(this.config.configDir, this.log.bind(this))
-    if (!config) {
-      return {
-        error: 'Missing authentication config',
-        success: false,
-      }
+export default createAuthTestCommand({
+  clearClients,
+  fields,
+  hasHostFlag: false,
+  serviceName: 'Trello',
+  testConnection: async (auth) => {
+    try {
+      const api = new TrelloApi(auth)
+      return api.testConnection()
+    } catch (error) {
+      return {error, success: false}
     }
-
-    action.start('Authenticating connection')
-    const result = await testConnection(config.auth)
-    clearClients()
-
-    if (result.success) {
-      action.stop('✓ successful')
-      this.log('Successful connect to Trello')
-    } else {
-      action.stop('✗ failed')
-      this.error('Failed to connect to Trello.')
-    }
-
-    return result
-  }
-}
+  },
+})
