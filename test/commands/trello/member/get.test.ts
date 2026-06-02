@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('member:get', () => {
   let MemberGet: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockGetMember: any
   let mockClearClients: any
   let jsonOutput: any
@@ -15,8 +15,8 @@ describe('member:get', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockGetMember = async (_config: any, memberId: string) => ({
@@ -27,10 +27,13 @@ describe('member:get', () => {
     mockClearClients = () => {}
 
     MemberGet = await esmock('../../../../src/commands/trello/member/get.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getMember: mockGetMember,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
   })

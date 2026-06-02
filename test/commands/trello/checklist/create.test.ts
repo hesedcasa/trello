@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('checklist:create', () => {
   let ChecklistCreate: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockCreateChecklist: any
   let mockClearClients: any
   let jsonOutput: any
@@ -15,8 +15,8 @@ describe('checklist:create', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockCreateChecklist = async () => ({
@@ -27,10 +27,13 @@ describe('checklist:create', () => {
     mockClearClients = () => {}
 
     ChecklistCreate = await esmock('../../../../src/commands/trello/checklist/create.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         createChecklist: mockCreateChecklist,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
   })

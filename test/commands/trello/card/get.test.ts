@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('card:get', () => {
   let CardGet: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockGetCard: any
   let mockClearClients: any
   let jsonOutput: any
@@ -15,8 +15,8 @@ describe('card:get', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockGetCard = async (_config: any, cardId: string) => ({
@@ -31,10 +31,13 @@ describe('card:get', () => {
     mockClearClients = () => {}
 
     CardGet = await esmock('../../../../src/commands/trello/card/get.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getCard: mockGetCard,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
   })
@@ -54,13 +57,14 @@ describe('card:get', () => {
   })
 
   it('handles API errors gracefully', async () => {
-    mockGetCard = async () => ({error: 'Card not found', success: false})
-
     CardGet = await esmock('../../../../src/commands/trello/card/get.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
-        getCard: mockGetCard,
+        getCard: async () => ({error: 'Card not found', success: false}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
 
@@ -76,15 +80,17 @@ describe('card:get', () => {
 
   it('calls clearClients after execution', async () => {
     let clearClientsCalled = false
-    mockClearClients = () => {
-      clearClientsCalled = true
-    }
 
     CardGet = await esmock('../../../../src/commands/trello/card/get.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
-        clearClients: mockClearClients,
+        clearClients() {
+          clearClientsCalled = true
+        },
         getCard: mockGetCard,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
 

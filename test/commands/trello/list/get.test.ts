@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('list:get', () => {
   let ListGet: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockGetList: any
   let mockClearClients: any
   let jsonOutput: any
@@ -15,8 +15,8 @@ describe('list:get', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockGetList = async (_config: any, listId: string) => ({
@@ -27,10 +27,13 @@ describe('list:get', () => {
     mockClearClients = () => {}
 
     ListGet = await esmock('../../../../src/commands/trello/list/get.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getList: mockGetList,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
   })
@@ -50,15 +53,17 @@ describe('list:get', () => {
 
   it('calls clearClients after execution', async () => {
     let clearClientsCalled = false
-    mockClearClients = () => {
-      clearClientsCalled = true
-    }
 
     ListGet = await esmock('../../../../src/commands/trello/list/get.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
-        clearClients: mockClearClients,
+        clearClients() {
+          clearClientsCalled = true
+        },
         getList: mockGetList,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
 

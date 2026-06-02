@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('card:update', () => {
   let CardUpdate: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockUpdateCard: any
   let mockClearClients: any
   let jsonOutput: any
@@ -15,8 +15,8 @@ describe('card:update', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockUpdateCard = async () => ({
@@ -27,10 +27,13 @@ describe('card:update', () => {
     mockClearClients = () => {}
 
     CardUpdate = await esmock('../../../../src/commands/trello/card/update.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         updateCard: mockUpdateCard,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
   })
@@ -58,13 +61,14 @@ describe('card:update', () => {
   })
 
   it('exits early when config is not available', async () => {
-    mockReadConfig = async () => null
-
     CardUpdate = await esmock('../../../../src/commands/trello/card/update.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         updateCard: mockUpdateCard,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: () => ({loadAuthConfig: async () => null}),
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
 
@@ -73,7 +77,12 @@ describe('card:update', () => {
       jsonOutput = output
     }
 
-    await command.run()
+    try {
+      await command.run()
+    } catch {
+      // expected error from this.error()
+    }
+
     expect(jsonOutput).to.be.null
   })
 })

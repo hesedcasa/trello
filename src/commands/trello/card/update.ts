@@ -1,7 +1,7 @@
+import {createProfileManager, formatAsToon} from '@hesed/plugin-lib'
 import {Args, Command, Flags} from '@oclif/core'
 
-import {readConfig} from '../../../config.js'
-import {formatAsToon} from '../../../format.js'
+import {type Config} from '../../../trello/trello-api.js'
 import {clearClients, updateCard} from '../../../trello/trello-client.js'
 
 export default class CardUpdate extends Command {
@@ -19,8 +19,11 @@ export default class CardUpdate extends Command {
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(CardUpdate)
-    const config = await readConfig(this.config.configDir, this.log.bind(this))
-    if (!config) return
+    const pm = createProfileManager<Config>(this.config)
+    const auth = await pm.loadAuthConfig()
+    if (!auth) {
+      this.error(`Missing authentication config.`)
+    }
 
     const fields: Record<string, string> = {}
     if (flags.fields) {
@@ -31,7 +34,7 @@ export default class CardUpdate extends Command {
       }
     }
 
-    const result = await updateCard(config.auth, args.cardId, fields)
+    const result = await updateCard(auth, args.cardId, fields)
     clearClients()
 
     if (flags.toon) {
