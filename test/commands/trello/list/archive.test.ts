@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('list:archive', () => {
   let ListArchive: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockArchiveList: any
   let mockArchiveAllCardsInList: any
   let mockClearClients: any
@@ -16,8 +16,8 @@ describe('list:archive', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockArchiveList = async () => ({data: {closed: true, id: 'list123'}, success: true})
@@ -25,11 +25,13 @@ describe('list:archive', () => {
     mockClearClients = () => {}
 
     ListArchive = await esmock('../../../../src/commands/trello/list/archive.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         archiveAllCardsInList: mockArchiveAllCardsInList,
         archiveList: mockArchiveList,
         clearClients: mockClearClients,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
       },
     })
   })
@@ -58,14 +60,14 @@ describe('list:archive', () => {
   })
 
   it('exits early when config is not available', async () => {
-    mockReadConfig = async () => null
-
     ListArchive = await esmock('../../../../src/commands/trello/list/archive.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         archiveAllCardsInList: mockArchiveAllCardsInList,
         archiveList: mockArchiveList,
         clearClients: mockClearClients,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: () => ({loadAuthConfig: async () => null}),
       },
     })
 
@@ -74,7 +76,12 @@ describe('list:archive', () => {
       jsonOutput = output
     }
 
-    await command.run()
+    try {
+      await command.run()
+    } catch {
+      // expected error from this.error()
+    }
+
     expect(jsonOutput).to.be.null
   })
 })

@@ -15,6 +15,7 @@ npm run pre-commit     # format + find-deadcode
 ```
 
 Run a single test file:
+
 ```bash
 npx mocha --forbid-only "test/commands/trello/card/create.test.ts"
 ```
@@ -24,6 +25,7 @@ npx mocha --forbid-only "test/commands/trello/card/create.test.ts"
 This is an OCLIF v4 CLI (`trello` binary) organized into three layers:
 
 **Commands** (`src/commands/trello/<resource>/<action>.ts`) — OCLIF `Command` subclasses. Each command:
+
 1. Reads auth config via `readConfig()` from `src/config.ts`
 2. Calls a function from `src/trello/trello-client.ts`
 3. Calls `clearClients()` after the API call
@@ -48,7 +50,9 @@ CardCreate = await esmock('../../../../src/commands/trello/card/create.js', {
   '../../../../src/trello/trello-client.js': {createCard: mockCreateCard, clearClients: mockClearClients},
 })
 const command = new CardCreate.default(['arg1', 'arg2'], createMockConfig())
-command.logJson = (output) => { /* capture */ }
+command.logJson = (output) => {
+  /* capture */
+}
 await command.run()
 ```
 

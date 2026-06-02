@@ -1,7 +1,7 @@
+import {createProfileManager, formatAsToon} from '@hesed/plugin-lib'
 import {Args, Command, Flags} from '@oclif/core'
 
-import {readConfig} from '../../../config.js'
-import {formatAsToon} from '../../../format.js'
+import {type Config} from '../../../trello/trello-api.js'
 import {clearClients, createList} from '../../../trello/trello-client.js'
 
 export default class ListCreate extends Command {
@@ -21,10 +21,13 @@ export default class ListCreate extends Command {
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(ListCreate)
-    const config = await readConfig(this.config.configDir, this.log.bind(this))
-    if (!config) return
+    const pm = createProfileManager<Config>(this.config)
+    const auth = await pm.loadAuthConfig()
+    if (!auth) {
+      this.error(`Missing authentication config.`)
+    }
 
-    const result = await createList(config.auth, args.boardId, args.name, flags.pos)
+    const result = await createList(auth, args.boardId, args.name, flags.pos)
     clearClients()
 
     if (flags.toon) {

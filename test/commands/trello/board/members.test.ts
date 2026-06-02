@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('board:members', () => {
   let BoardMembers: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockGetBoardMembers: any
   let mockClearClients: any
   let jsonOutput: any
@@ -15,8 +15,8 @@ describe('board:members', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockGetBoardMembers = async () => ({
@@ -27,10 +27,13 @@ describe('board:members', () => {
     mockClearClients = () => {}
 
     BoardMembers = await esmock('../../../../src/commands/trello/board/members.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoardMembers: mockGetBoardMembers,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
   })
@@ -48,13 +51,14 @@ describe('board:members', () => {
   })
 
   it('exits early when config is not available', async () => {
-    mockReadConfig = async () => null
-
     BoardMembers = await esmock('../../../../src/commands/trello/board/members.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoardMembers: mockGetBoardMembers,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: () => ({loadAuthConfig: async () => null}),
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
 
@@ -63,7 +67,12 @@ describe('board:members', () => {
       jsonOutput = output
     }
 
-    await command.run()
+    try {
+      await command.run()
+    } catch {
+      // expected error from this.error()
+    }
+
     expect(jsonOutput).to.be.null
   })
 })

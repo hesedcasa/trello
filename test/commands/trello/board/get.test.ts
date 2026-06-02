@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('board:get', () => {
   let BoardGet: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockGetBoard: any
   let mockClearClients: any
   let logOutput: string[]
@@ -17,11 +17,8 @@ describe('board:get', () => {
     logOutput = []
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {
-        apiKey: 'test-key',
-        apiToken: 'test-token',
-      },
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockGetBoard = async (_config: any, boardId: string) => ({
@@ -36,10 +33,13 @@ describe('board:get', () => {
     mockClearClients = () => {}
 
     BoardGet = await esmock('../../../../src/commands/trello/board/get.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoard: mockGetBoard,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
   })
@@ -71,13 +71,14 @@ describe('board:get', () => {
   })
 
   it('handles API errors gracefully', async () => {
-    mockGetBoard = async () => ({error: 'Board not found', success: false})
-
     BoardGet = await esmock('../../../../src/commands/trello/board/get.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
-        getBoard: mockGetBoard,
+        getBoard: async () => ({error: 'Board not found', success: false}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
 
@@ -93,38 +94,44 @@ describe('board:get', () => {
   })
 
   it('exits early when config is not available', async () => {
-    mockReadConfig = async () => null
-
     BoardGet = await esmock('../../../../src/commands/trello/board/get.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoard: mockGetBoard,
       },
+      '@hesed/plugin-lib': {
+        createProfileManager: () => ({loadAuthConfig: async () => null}),
+        formatAsToon: (d: any) => JSON.stringify(d),
+      },
     })
 
     const command = new BoardGet.default(['board123'], createMockConfig())
-    let getBoardCalled = false
-    mockGetBoard = async () => {
-      getBoardCalled = true
-      return {data: {}, success: true}
+    command.logJson = (output: any) => {
+      jsonOutput = output
     }
 
-    await command.run()
-    expect(getBoardCalled).to.be.false
+    try {
+      await command.run()
+    } catch {
+      // expected error from this.error()
+    }
+
+    expect(jsonOutput).to.be.null
   })
 
   it('calls clearClients after execution', async () => {
     let clearClientsCalled = false
-    mockClearClients = () => {
-      clearClientsCalled = true
-    }
 
     BoardGet = await esmock('../../../../src/commands/trello/board/get.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
-        clearClients: mockClearClients,
+        clearClients() {
+          clearClientsCalled = true
+        },
         getBoard: mockGetBoard,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
 

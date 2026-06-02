@@ -1,10 +1,5 @@
+import {type ApiResult} from '@hesed/plugin-lib'
 import {TrelloClient} from 'trello.js'
-
-export interface ApiResult {
-  data?: unknown
-  error?: unknown
-  success: boolean
-}
 
 export interface Config {
   apiKey: string

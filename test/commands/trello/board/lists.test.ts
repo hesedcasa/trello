@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('board:lists', () => {
   let BoardLists: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockGetBoardLists: any
   let mockClearClients: any
   let jsonOutput: any
@@ -15,8 +15,8 @@ describe('board:lists', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockGetBoardLists = async () => ({
@@ -27,10 +27,13 @@ describe('board:lists', () => {
     mockClearClients = () => {}
 
     BoardLists = await esmock('../../../../src/commands/trello/board/lists.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoardLists: mockGetBoardLists,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
   })
@@ -48,13 +51,14 @@ describe('board:lists', () => {
   })
 
   it('exits early when config is not available', async () => {
-    mockReadConfig = async () => null
-
     BoardLists = await esmock('../../../../src/commands/trello/board/lists.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoardLists: mockGetBoardLists,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: () => ({loadAuthConfig: async () => null}),
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
 
@@ -63,7 +67,12 @@ describe('board:lists', () => {
       jsonOutput = output
     }
 
-    await command.run()
+    try {
+      await command.run()
+    } catch {
+      // expected error from this.error()
+    }
+
     expect(jsonOutput).to.be.null
   })
 })

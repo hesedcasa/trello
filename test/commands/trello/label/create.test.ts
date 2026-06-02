@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('label:create', () => {
   let LabelCreate: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockCreateLabel: any
   let mockClearClients: any
   let jsonOutput: any
@@ -15,8 +15,8 @@ describe('label:create', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockCreateLabel = async () => ({
@@ -27,10 +27,13 @@ describe('label:create', () => {
     mockClearClients = () => {}
 
     LabelCreate = await esmock('../../../../src/commands/trello/label/create.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         createLabel: mockCreateLabel,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
       },
     })
   })

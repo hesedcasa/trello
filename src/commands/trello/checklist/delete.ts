@@ -1,6 +1,7 @@
+import {createProfileManager} from '@hesed/plugin-lib'
 import {Args, Command} from '@oclif/core'
 
-import {readConfig} from '../../../config.js'
+import {type Config} from '../../../trello/trello-api.js'
 import {clearClients, deleteChecklist} from '../../../trello/trello-client.js'
 
 export default class ChecklistDelete extends Command {
@@ -12,10 +13,13 @@ export default class ChecklistDelete extends Command {
 
   public async run(): Promise<void> {
     const {args} = await this.parse(ChecklistDelete)
-    const config = await readConfig(this.config.configDir, this.log.bind(this))
-    if (!config) return
+    const pm = createProfileManager<Config>(this.config)
+    const auth = await pm.loadAuthConfig()
+    if (!auth) {
+      this.error(`Missing authentication config.`)
+    }
 
-    const result = await deleteChecklist(config.auth, args.checklistId)
+    const result = await deleteChecklist(auth, args.checklistId)
     clearClients()
 
     this.logJson(result)

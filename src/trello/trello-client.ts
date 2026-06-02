@@ -1,8 +1,8 @@
-import type {ApiResult, Config} from './trello-api.js'
+import {type ApiResult} from '@hesed/plugin-lib'
 
-import {TrelloApi} from './trello-api.js'
+import {type Config, TrelloApi} from './trello-api.js'
 
-let trelloApi: null | TrelloApi
+let trelloApi: null | TrelloApi = null
 
 async function initTrello(config: Config): Promise<TrelloApi> {
   if (trelloApi) return trelloApi

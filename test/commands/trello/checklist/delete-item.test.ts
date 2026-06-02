@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('checklist:delete-item', () => {
   let ChecklistDeleteItem: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockDeleteChecklistItem: any
   let mockClearClients: any
   let jsonOutput: any
@@ -15,18 +15,20 @@ describe('checklist:delete-item', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockDeleteChecklistItem = async () => ({data: true, success: true})
     mockClearClients = () => {}
 
     ChecklistDeleteItem = await esmock('../../../../src/commands/trello/checklist/delete-item.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         deleteChecklistItem: mockDeleteChecklistItem,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
       },
     })
   })
@@ -43,13 +45,13 @@ describe('checklist:delete-item', () => {
   })
 
   it('exits early when config is not available', async () => {
-    mockReadConfig = async () => null
-
     ChecklistDeleteItem = await esmock('../../../../src/commands/trello/checklist/delete-item.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         deleteChecklistItem: mockDeleteChecklistItem,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: () => ({loadAuthConfig: async () => null}),
       },
     })
 
@@ -58,7 +60,12 @@ describe('checklist:delete-item', () => {
       jsonOutput = output
     }
 
-    await command.run()
+    try {
+      await command.run()
+    } catch {
+      // expected error from this.error()
+    }
+
     expect(jsonOutput).to.be.null
   })
 })

@@ -7,7 +7,7 @@ import {createMockConfig} from '../../../helpers/config-mock.js'
 
 describe('card:delete', () => {
   let CardDelete: any
-  let mockReadConfig: any
+  let mockCreateProfileManager: any
   let mockDeleteCard: any
   let mockClearClients: any
   let jsonOutput: any
@@ -15,18 +15,20 @@ describe('card:delete', () => {
   beforeEach(async () => {
     jsonOutput = null
 
-    mockReadConfig = async () => ({
-      auth: {apiKey: 'test-key', apiToken: 'test-token'},
+    mockCreateProfileManager = () => ({
+      loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
 
     mockDeleteCard = async () => ({data: true, success: true})
     mockClearClients = () => {}
 
     CardDelete = await esmock('../../../../src/commands/trello/card/delete.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         deleteCard: mockDeleteCard,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
       },
     })
   })
@@ -44,13 +46,13 @@ describe('card:delete', () => {
   })
 
   it('exits early when config is not available', async () => {
-    mockReadConfig = async () => null
-
     CardDelete = await esmock('../../../../src/commands/trello/card/delete.js', {
-      '../../../../src/config.js': {readConfig: mockReadConfig},
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         deleteCard: mockDeleteCard,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: () => ({loadAuthConfig: async () => null}),
       },
     })
 
@@ -59,7 +61,12 @@ describe('card:delete', () => {
       jsonOutput = output
     }
 
-    await command.run()
+    try {
+      await command.run()
+    } catch {
+      // expected error from this.error()
+    }
+
     expect(jsonOutput).to.be.null
   })
 })
