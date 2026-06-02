@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/hesedcasa/trello/compare/v0.2.0...v0.2.1) (2026-06-02)
+
+
+### ♻️ Chores
+
+* migrate auth and all commands to @hesed/plugin-lib ([#18](https://github.com/hesedcasa/trello/issues/18)) ([eb02ae3](https://github.com/hesedcasa/trello/commit/eb02ae36c7c5ebbd7f4c95cf580cdb2e7cf9285c))
+
 ## [0.2.0](https://github.com/hesedcasa/trello/compare/v0.1.0...v0.2.0) (2026-04-11)
 
 
