@@ -9,6 +9,7 @@ const fields: FieldDef[] = [
 
 export default createAuthUpdateCommand({
   clearClients,
+  configFile: 'trello-config.json',
   fields,
   serviceName: 'Trello',
   testConnection,
