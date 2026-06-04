@@ -26,7 +26,7 @@ $ npm install -g @hesed/trello
 $ trello COMMAND
 running command...
 $ trello (--version)
-@hesed/trello/0.2.1 linux-x64 node-v22.22.3
+@hesed/trello/0.3.0 linux-x64 node-v22.22.3
 $ trello --help [COMMAND]
 USAGE
   $ trello COMMAND
@@ -97,7 +97,7 @@ EXAMPLES
   $ trello trello auth add -p prod
 ```
 
-_See code: [src/commands/trello/auth/add.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/auth/add.ts)_
+_See code: [src/commands/trello/auth/add.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/auth/add.ts)_
 
 ## `trello trello auth delete`
 
@@ -122,7 +122,7 @@ EXAMPLES
   $ trello trello auth delete -p prod
 ```
 
-_See code: [src/commands/trello/auth/delete.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/auth/delete.ts)_
+_See code: [src/commands/trello/auth/delete.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/auth/delete.ts)_
 
 ## `trello trello auth list`
 
@@ -142,7 +142,7 @@ EXAMPLES
   $ trello trello auth list
 ```
 
-_See code: [src/commands/trello/auth/list.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/auth/list.ts)_
+_See code: [src/commands/trello/auth/list.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/auth/list.ts)_
 
 ## `trello trello auth profile`
 
@@ -167,7 +167,7 @@ EXAMPLES
   $ trello trello auth profile --default test
 ```
 
-_See code: [src/commands/trello/auth/profile.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/auth/profile.ts)_
+_See code: [src/commands/trello/auth/profile.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/auth/profile.ts)_
 
 ## `trello trello auth test`
 
@@ -192,7 +192,7 @@ EXAMPLES
   $ trello trello auth test -p prod
 ```
 
-_See code: [src/commands/trello/auth/test.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/auth/test.ts)_
+_See code: [src/commands/trello/auth/test.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/auth/test.ts)_
 
 ## `trello trello auth update`
 
@@ -219,7 +219,7 @@ EXAMPLES
   $ trello trello auth update -p test
 ```
 
-_See code: [src/commands/trello/auth/update.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/auth/update.ts)_
+_See code: [src/commands/trello/auth/update.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/auth/update.ts)_
 
 ## `trello trello board cards BOARDID`
 
@@ -243,7 +243,7 @@ EXAMPLES
   $ trello trello board cards 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/board/cards.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/board/cards.ts)_
+_See code: [src/commands/trello/board/cards.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/board/cards.ts)_
 
 ## `trello trello board get BOARDID`
 
@@ -266,7 +266,7 @@ EXAMPLES
   $ trello trello board get 5a1b2c3d4e5f6g7h8i9j
 ```
 
-_See code: [src/commands/trello/board/get.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/board/get.ts)_
+_See code: [src/commands/trello/board/get.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/board/get.ts)_
 
 ## `trello trello board list`
 
@@ -286,7 +286,7 @@ EXAMPLES
   $ trello trello board list
 ```
 
-_See code: [src/commands/trello/board/list.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/board/list.ts)_
+_See code: [src/commands/trello/board/list.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/board/list.ts)_
 
 ## `trello trello board lists BOARDID`
 
@@ -309,7 +309,7 @@ EXAMPLES
   $ trello trello board lists 5a1b2c3d4e5f6g7h8i9j
 ```
 
-_See code: [src/commands/trello/board/lists.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/board/lists.ts)_
+_See code: [src/commands/trello/board/lists.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/board/lists.ts)_
 
 ## `trello trello board members BOARDID`
 
@@ -332,7 +332,7 @@ EXAMPLES
   $ trello trello board members 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/board/members.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/board/members.ts)_
+_See code: [src/commands/trello/board/members.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/board/members.ts)_
 
 ## `trello trello card comments CARDID`
 
@@ -355,7 +355,7 @@ EXAMPLES
   $ trello trello card comments 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/card/comments.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/card/comments.ts)_
+_See code: [src/commands/trello/card/comments.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/card/comments.ts)_
 
 ## `trello trello card create LISTID NAME`
 
@@ -384,7 +384,7 @@ EXAMPLES
   $ trello trello card create 5a1b2c3d "My new card" --desc "Card description" --pos top
 ```
 
-_See code: [src/commands/trello/card/create.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/card/create.ts)_
+_See code: [src/commands/trello/card/create.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/card/create.ts)_
 
 ## `trello trello card delete CARDID`
 
@@ -404,7 +404,7 @@ EXAMPLES
   $ trello trello card delete 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/card/delete.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/card/delete.ts)_
+_See code: [src/commands/trello/card/delete.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/card/delete.ts)_
 
 ## `trello trello card get CARDID`
 
@@ -427,7 +427,7 @@ EXAMPLES
   $ trello trello card get 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/card/get.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/card/get.ts)_
+_See code: [src/commands/trello/card/get.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/card/get.ts)_
 
 ## `trello trello card move CARDID LISTID`
 
@@ -454,7 +454,7 @@ EXAMPLES
   $ trello trello card move cardId123 listId456 --board boardId789
 ```
 
-_See code: [src/commands/trello/card/move.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/card/move.ts)_
+_See code: [src/commands/trello/card/move.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/card/move.ts)_
 
 ## `trello trello card search QUERY`
 
@@ -480,7 +480,7 @@ EXAMPLES
   $ trello trello card search "bug fix" --boards boardId1,boardId2
 ```
 
-_See code: [src/commands/trello/card/search.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/card/search.ts)_
+_See code: [src/commands/trello/card/search.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/card/search.ts)_
 
 ## `trello trello card update CARDID`
 
@@ -504,7 +504,7 @@ EXAMPLES
   $ trello trello card update 5a1b2c3d --fields name="Updated name" desc="New description"
 ```
 
-_See code: [src/commands/trello/card/update.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/card/update.ts)_
+_See code: [src/commands/trello/card/update.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/card/update.ts)_
 
 ## `trello trello checklist add-item CHECKLISTID NAME`
 
@@ -528,7 +528,7 @@ EXAMPLES
   $ trello trello checklist add-item checklistId123 "Buy groceries"
 ```
 
-_See code: [src/commands/trello/checklist/add-item.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/checklist/add-item.ts)_
+_See code: [src/commands/trello/checklist/add-item.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/checklist/add-item.ts)_
 
 ## `trello trello checklist create CARDID NAME`
 
@@ -552,7 +552,7 @@ EXAMPLES
   $ trello trello checklist create cardId123 "My Checklist"
 ```
 
-_See code: [src/commands/trello/checklist/create.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/checklist/create.ts)_
+_See code: [src/commands/trello/checklist/create.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/checklist/create.ts)_
 
 ## `trello trello checklist delete CHECKLISTID`
 
@@ -572,7 +572,7 @@ EXAMPLES
   $ trello trello checklist delete 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/checklist/delete.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/checklist/delete.ts)_
+_See code: [src/commands/trello/checklist/delete.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/checklist/delete.ts)_
 
 ## `trello trello checklist delete-item CHECKLISTID CHECKITEMID`
 
@@ -593,7 +593,7 @@ EXAMPLES
   $ trello trello checklist delete-item checklistId123 itemId456
 ```
 
-_See code: [src/commands/trello/checklist/delete-item.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/checklist/delete-item.ts)_
+_See code: [src/commands/trello/checklist/delete-item.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/checklist/delete-item.ts)_
 
 ## `trello trello checklist get CHECKLISTID`
 
@@ -616,7 +616,7 @@ EXAMPLES
   $ trello trello checklist get 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/checklist/get.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/checklist/get.ts)_
+_See code: [src/commands/trello/checklist/get.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/checklist/get.ts)_
 
 ## `trello trello comment add CARDID TEXT`
 
@@ -648,7 +648,7 @@ EXAMPLES
   $ trello trello comment add cardId123 "Check [this](https://example.com) link"
 ```
 
-_See code: [src/commands/trello/comment/add.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/comment/add.ts)_
+_See code: [src/commands/trello/comment/add.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/comment/add.ts)_
 
 ## `trello trello comment delete CARDID ACTIONID`
 
@@ -669,7 +669,7 @@ EXAMPLES
   $ trello trello comment delete cardId123 actionId456
 ```
 
-_See code: [src/commands/trello/comment/delete.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/comment/delete.ts)_
+_See code: [src/commands/trello/comment/delete.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/comment/delete.ts)_
 
 ## `trello trello comment update CARDID ACTIONID TEXT`
 
@@ -702,7 +702,7 @@ EXAMPLES
   $ trello trello comment update cardId123 actionId456 "Check [this](https://example.com) link"
 ```
 
-_See code: [src/commands/trello/comment/update.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/comment/update.ts)_
+_See code: [src/commands/trello/comment/update.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/comment/update.ts)_
 
 ## `trello trello label create BOARDID NAME COLOR`
 
@@ -727,7 +727,7 @@ EXAMPLES
   $ trello trello label create 5a1b2c3d "Bug" red
 ```
 
-_See code: [src/commands/trello/label/create.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/label/create.ts)_
+_See code: [src/commands/trello/label/create.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/label/create.ts)_
 
 ## `trello trello label delete LABELID`
 
@@ -747,7 +747,7 @@ EXAMPLES
   $ trello trello label delete 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/label/delete.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/label/delete.ts)_
+_See code: [src/commands/trello/label/delete.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/label/delete.ts)_
 
 ## `trello trello label list BOARDID`
 
@@ -770,7 +770,7 @@ EXAMPLES
   $ trello trello label list 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/label/list.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/label/list.ts)_
+_See code: [src/commands/trello/label/list.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/label/list.ts)_
 
 ## `trello trello list archive LISTID`
 
@@ -795,7 +795,7 @@ EXAMPLES
   $ trello trello list archive 5a1b2c3d --cards-only
 ```
 
-_See code: [src/commands/trello/list/archive.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/list/archive.ts)_
+_See code: [src/commands/trello/list/archive.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/list/archive.ts)_
 
 ## `trello trello list cards LISTID`
 
@@ -818,7 +818,7 @@ EXAMPLES
   $ trello trello list cards 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/list/cards.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/list/cards.ts)_
+_See code: [src/commands/trello/list/cards.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/list/cards.ts)_
 
 ## `trello trello list create BOARDID NAME`
 
@@ -846,7 +846,7 @@ EXAMPLES
   $ trello trello list create 5a1b2c3d "Done" --pos bottom
 ```
 
-_See code: [src/commands/trello/list/create.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/list/create.ts)_
+_See code: [src/commands/trello/list/create.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/list/create.ts)_
 
 ## `trello trello list get LISTID`
 
@@ -869,7 +869,7 @@ EXAMPLES
   $ trello trello list get 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/list/get.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/list/get.ts)_
+_See code: [src/commands/trello/list/get.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/list/get.ts)_
 
 ## `trello trello member get [MEMBERID]`
 
@@ -896,5 +896,5 @@ EXAMPLES
   $ trello trello member get johndoe
 ```
 
-_See code: [src/commands/trello/member/get.ts](https://github.com/hesedcasa/trello/blob/v0.2.1/src/commands/trello/member/get.ts)_
+_See code: [src/commands/trello/member/get.ts](https://github.com/hesedcasa/trello/blob/v0.3.0/src/commands/trello/member/get.ts)_
 <!-- commandsstop -->
