@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/hesedcasa/trello/compare/v0.2.1...v0.3.0) (2026-06-04)
+
+
+### 🎉 Features
+
+* pass explicit configFile to auth commands and bump plugin-lib to 0.9.0 ([996396d](https://github.com/hesedcasa/trello/commit/996396db251640c695701f5bd090965ca1a812e9))
+
 ## [0.2.1](https://github.com/hesedcasa/trello/compare/v0.2.0...v0.2.1) (2026-06-02)
 
 
