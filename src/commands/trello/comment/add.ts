@@ -17,12 +17,13 @@ export default class CommentAdd extends Command {
     '<%= config.bin %> <%= command.id %> cardId123 "Check [this](https://example.com) link"',
   ]
   static override flags = {
+    profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
     toon: Flags.boolean({description: 'Format output as toon', required: false}),
   }
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(CommentAdd)
-    const pm = createProfileManager<Config>(this.config)
+    const pm = createProfileManager<Config>(this.config, flags.profile)
     const auth = await pm.loadAuthConfig()
     if (!auth) {
       this.error(`Missing authentication config.`)

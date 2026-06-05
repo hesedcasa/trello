@@ -19,12 +19,13 @@ export default class LabelCreate extends Command {
   static override description = 'Create a new label on a board'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d "Bug" red']
   static override flags = {
+    profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
     toon: Flags.boolean({description: 'Format output as toon', required: false}),
   }
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(LabelCreate)
-    const pm = createProfileManager<Config>(this.config)
+    const pm = createProfileManager<Config>(this.config, flags.profile)
     const auth = await pm.loadAuthConfig()
     if (!auth) {
       this.error(`Missing authentication config.`)

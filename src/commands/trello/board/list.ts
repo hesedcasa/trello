@@ -9,12 +9,13 @@ export default class BoardList extends Command {
   static override description = 'List all boards for the authenticated member'
   static override examples = ['<%= config.bin %> <%= command.id %>']
   static override flags = {
+    profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
     toon: Flags.boolean({description: 'Format output as toon', required: false}),
   }
 
   public async run(): Promise<void> {
     const {flags} = await this.parse(BoardList)
-    const pm = createProfileManager<Config>(this.config)
+    const pm = createProfileManager<Config>(this.config, flags.profile)
     const auth = await pm.loadAuthConfig()
     if (!auth) {
       this.error(`Missing authentication config.`)

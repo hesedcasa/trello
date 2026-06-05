@@ -17,12 +17,13 @@ export default class CardCreate extends Command {
   static override flags = {
     desc: Flags.string({description: 'Card description', required: false}),
     pos: Flags.string({description: 'Position of the card (top, bottom)', options: ['top', 'bottom'], required: false}),
+    profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
     toon: Flags.boolean({description: 'Format output as toon', required: false}),
   }
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(CardCreate)
-    const pm = createProfileManager<Config>(this.config)
+    const pm = createProfileManager<Config>(this.config, flags.profile)
     const auth = await pm.loadAuthConfig()
     if (!auth) {
       this.error(`Missing authentication config.`)
