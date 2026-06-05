@@ -68,4 +68,30 @@ describe('checklist:delete-item', () => {
 
     expect(jsonOutput).to.be.null
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    ChecklistDeleteItem = await esmock('../../../../src/commands/trello/checklist/delete-item.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        deleteChecklistItem: async () => ({data: true, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+      },
+    })
+
+    const command = new ChecklistDeleteItem.default(
+      ['checklist123', 'item456', '--profile', 'work'],
+      createMockConfig(),
+    )
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

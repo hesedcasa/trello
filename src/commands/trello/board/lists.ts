@@ -11,12 +11,13 @@ export default class BoardLists extends Command {
   static override description = 'Get all lists on a board'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d4e5f6g7h8i9j']
   static override flags = {
+    profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
     toon: Flags.boolean({description: 'Format output as toon', required: false}),
   }
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(BoardLists)
-    const pm = createProfileManager<Config>(this.config)
+    const pm = createProfileManager<Config>(this.config, flags.profile, 'trello-config.json')
     const auth = await pm.loadAuthConfig()
     if (!auth) {
       this.error(`Missing authentication config.`)

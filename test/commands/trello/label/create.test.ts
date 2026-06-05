@@ -50,4 +50,28 @@ describe('label:create', () => {
     expect(jsonOutput.data).to.have.property('name', 'Bug')
     expect(jsonOutput.data).to.have.property('color', 'red')
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    LabelCreate = await esmock('../../../../src/commands/trello/label/create.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        createLabel: async () => ({data: {}, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+        formatAsToon: (d: any) => JSON.stringify(d),
+      },
+    })
+
+    const command = new LabelCreate.default(['board123', 'Bug', 'red', '--profile', 'work'], createMockConfig())
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

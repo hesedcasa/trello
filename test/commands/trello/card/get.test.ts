@@ -100,4 +100,28 @@ describe('card:get', () => {
     await command.run()
     expect(clearClientsCalled).to.be.true
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    CardGet = await esmock('../../../../src/commands/trello/card/get.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        getCard: async () => ({data: {}, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+        formatAsToon: (d: any) => JSON.stringify(d),
+      },
+    })
+
+    const command = new CardGet.default(['card123', '--profile', 'work'], createMockConfig())
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

@@ -50,4 +50,28 @@ describe('checklist:create', () => {
     expect(jsonOutput.data).to.have.property('id', 'cl1')
     expect(jsonOutput.data).to.have.property('name', 'My Checklist')
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    ChecklistCreate = await esmock('../../../../src/commands/trello/checklist/create.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        createChecklist: async () => ({data: {}, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+        formatAsToon: (d: any) => JSON.stringify(d),
+      },
+    })
+
+    const command = new ChecklistCreate.default(['card123', 'My Checklist', '--profile', 'work'], createMockConfig())
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

@@ -86,4 +86,28 @@ describe('list:create', () => {
 
     expect(jsonOutput).to.be.null
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    ListCreate = await esmock('../../../../src/commands/trello/list/create.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        createList: async () => ({data: {}, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+        formatAsToon: (d: any) => JSON.stringify(d),
+      },
+    })
+
+    const command = new ListCreate.default(['board123', 'My List', '--profile', 'work'], createMockConfig())
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

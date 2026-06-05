@@ -16,12 +16,13 @@ export default class ListCreate extends Command {
   ]
   static override flags = {
     pos: Flags.string({description: 'Position of the list (top, bottom)', options: ['top', 'bottom'], required: false}),
+    profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
     toon: Flags.boolean({description: 'Format output as toon', required: false}),
   }
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(ListCreate)
-    const pm = createProfileManager<Config>(this.config)
+    const pm = createProfileManager<Config>(this.config, flags.profile, 'trello-config.json')
     const auth = await pm.loadAuthConfig()
     if (!auth) {
       this.error(`Missing authentication config.`)
