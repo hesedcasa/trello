@@ -23,7 +23,7 @@ export default class CommentAdd extends Command {
 
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(CommentAdd)
-    const pm = createProfileManager<Config>(this.config, flags.profile)
+    const pm = createProfileManager<Config>(this.config, flags.profile, 'trello-config.json')
     const auth = await pm.loadAuthConfig()
     if (!auth) {
       this.error(`Missing authentication config.`)
