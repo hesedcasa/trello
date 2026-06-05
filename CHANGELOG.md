@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/hesedcasa/trello/compare/v0.3.0...v0.4.0) (2026-06-05)
+
+
+### 🎉 Features
+
+* add --profile/-p flag to all non-auth commands ([#21](https://github.com/hesedcasa/trello/issues/21)) ([2fc48a6](https://github.com/hesedcasa/trello/commit/2fc48a69866dd7932f5b6ce60d611f1094382363))
+
 ## [0.3.0](https://github.com/hesedcasa/trello/compare/v0.2.1...v0.3.0) (2026-06-04)
 
 
