@@ -68,4 +68,27 @@ describe('label:delete', () => {
 
     expect(jsonOutput).to.be.null
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    LabelDelete = await esmock('../../../../src/commands/trello/label/delete.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        deleteLabel: async () => ({data: true, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+      },
+    })
+
+    const command = new LabelDelete.default(['label123', '--profile', 'work'], createMockConfig())
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

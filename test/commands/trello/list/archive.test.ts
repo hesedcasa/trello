@@ -84,4 +84,28 @@ describe('list:archive', () => {
 
     expect(jsonOutput).to.be.null
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    ListArchive = await esmock('../../../../src/commands/trello/list/archive.js', {
+      '../../../../src/trello/trello-client.js': {
+        archiveAllCardsInList: async () => ({data: true, success: true}),
+        archiveList: async () => ({data: {}, success: true}),
+        clearClients: mockClearClients,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+      },
+    })
+
+    const command = new ListArchive.default(['list123', '--profile', 'work'], createMockConfig())
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

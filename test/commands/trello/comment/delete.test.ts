@@ -68,4 +68,27 @@ describe('comment:delete', () => {
 
     expect(jsonOutput).to.be.null
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    CommentDelete = await esmock('../../../../src/commands/trello/comment/delete.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        deleteCardComment: async () => ({data: true, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+      },
+    })
+
+    const command = new CommentDelete.default(['card123', 'action456', '--profile', 'work'], createMockConfig())
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

@@ -75,4 +75,31 @@ describe('checklist:add-item', () => {
 
     expect(jsonOutput).to.be.null
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    ChecklistAddItem = await esmock('../../../../src/commands/trello/checklist/add-item.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        createChecklistItem: async () => ({data: {}, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+        formatAsToon: (d: any) => JSON.stringify(d),
+      },
+    })
+
+    const command = new ChecklistAddItem.default(
+      ['checklist123', 'Buy groceries', '--profile', 'work'],
+      createMockConfig(),
+    )
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

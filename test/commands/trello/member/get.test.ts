@@ -62,4 +62,28 @@ describe('member:get', () => {
     expect(jsonOutput.success).to.be.true
     expect(jsonOutput.data).to.have.property('id', 'johndoe')
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    MemberGet = await esmock('../../../../src/commands/trello/member/get.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        getMember: async () => ({data: {}, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+        formatAsToon: (d: any) => JSON.stringify(d),
+      },
+    })
+
+    const command = new MemberGet.default(['--profile', 'work'], createMockConfig())
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

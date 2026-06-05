@@ -69,4 +69,27 @@ describe('card:delete', () => {
 
     expect(jsonOutput).to.be.null
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    CardDelete = await esmock('../../../../src/commands/trello/card/delete.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        deleteCard: async () => ({data: true, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+      },
+    })
+
+    const command = new CardDelete.default(['card123', '--profile', 'work'], createMockConfig())
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })

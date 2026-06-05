@@ -74,4 +74,31 @@ describe('comment:update', () => {
 
     expect(jsonOutput).to.be.null
   })
+
+  it('passes profile flag to createProfileManager', async () => {
+    let capturedProfile: string | undefined
+
+    CommentUpdate = await esmock('../../../../src/commands/trello/comment/update.js', {
+      '../../../../src/trello/trello-client.js': {
+        clearClients: mockClearClients,
+        updateCardComment: async () => ({data: {}, success: true}),
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager(_config: any, profile: string | undefined) {
+          capturedProfile = profile
+          return {loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'})}
+        },
+        formatAsToon: (d: any) => JSON.stringify(d),
+      },
+    })
+
+    const command = new CommentUpdate.default(
+      ['card123', 'action456', 'Updated comment', '--profile', 'work'],
+      createMockConfig(),
+    )
+    command.logJson = () => {}
+    await command.run()
+
+    expect(capturedProfile).to.equal('work')
+  })
 })
