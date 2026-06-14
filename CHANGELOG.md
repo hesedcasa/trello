@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/hesedcasa/trello/compare/v0.4.0...v0.5.0) (2026-06-14)
+
+
+### 🎉 Features
+
+* add --filter flag to board list command defaulting to open ([174e51e](https://github.com/hesedcasa/trello/commit/174e51e66cbff29f8a4db29681e0798dd338d28f))
+
 ## [0.4.0](https://github.com/hesedcasa/trello/compare/v0.3.0...v0.4.0) (2026-06-05)
 
 
