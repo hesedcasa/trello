@@ -326,12 +326,13 @@ export class TrelloApi {
 
   // ── Lists ─────────────────────────────────────────────────────────
 
-  async getMyBoards(): Promise<ApiResult> {
+  async getMyBoards(filter = 'open'): Promise<ApiResult> {
     try {
       const client = this.getClient()
       const me = await client.members.getMember({id: 'me'})
       const response = await client.members.getMemberBoards({
         fields: ['name', 'desc', 'url', 'shortLink', 'dateLastActivity'],
+        filter: filter as 'all' | 'closed' | 'members' | 'open' | 'organization' | 'public' | 'starred',
         id: me.id ?? 'me',
       })
       return {data: response, success: true}

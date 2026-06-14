@@ -9,6 +9,11 @@ export default class BoardList extends Command {
   static override description = 'List all boards for the authenticated member'
   static override examples = ['<%= config.bin %> <%= command.id %>']
   static override flags = {
+    filter: Flags.string({
+      default: 'open',
+      description: 'Filter boards by status',
+      options: ['all', 'closed', 'members', 'open', 'organization', 'public', 'starred'],
+    }),
     profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
     toon: Flags.boolean({description: 'Format output as toon', required: false}),
   }
@@ -21,7 +26,7 @@ export default class BoardList extends Command {
       this.error(`Missing authentication config.`)
     }
 
-    const result = await getMyBoards(auth)
+    const result = await getMyBoards(auth, flags.filter)
     clearClients()
 
     if (flags.toon) {

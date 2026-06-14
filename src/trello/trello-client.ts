@@ -33,9 +33,9 @@ export async function deleteBoard(config: Config, boardId: string): Promise<ApiR
   return trello.deleteBoard(boardId)
 }
 
-export async function getMyBoards(config: Config): Promise<ApiResult> {
+export async function getMyBoards(config: Config, filter?: string): Promise<ApiResult> {
   const trello = await initTrello(config)
-  return trello.getMyBoards()
+  return trello.getMyBoards(filter)
 }
 
 export async function getBoardCards(config: Config, boardId: string, filter?: string): Promise<ApiResult> {
