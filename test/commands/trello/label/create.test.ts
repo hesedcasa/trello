@@ -10,11 +10,8 @@ describe('label:create', () => {
   let mockCreateProfileManager: any
   let mockCreateLabel: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -40,15 +37,11 @@ describe('label:create', () => {
 
   it('creates a label on a board', async () => {
     const command = new LabelCreate.default(['board123', 'Bug', 'red'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.have.property('name', 'Bug')
-    expect(jsonOutput.data).to.have.property('color', 'red')
+    expect(result.success).to.be.true
+    expect(result.data).to.have.property('name', 'Bug')
+    expect(result.data).to.have.property('color', 'red')
   })
 
   it('passes profile flag to createProfileManager', async () => {
@@ -69,7 +62,6 @@ describe('label:create', () => {
     })
 
     const command = new LabelCreate.default(['board123', 'Bug', 'red', '--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

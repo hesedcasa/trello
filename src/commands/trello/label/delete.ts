@@ -1,10 +1,11 @@
-import {createProfileManager} from '@hesed/plugin-lib'
-import {Args, Command, Flags} from '@oclif/core'
+import {type ApiResult, createProfileManager} from '@hesed/plugin-lib'
+import {Args, Flags} from '@oclif/core'
 
+import {BaseCommand} from '../../../base-command.js'
 import {type Config} from '../../../trello/trello-api.js'
 import {clearClients, deleteLabel} from '../../../trello/trello-client.js'
 
-export default class LabelDelete extends Command {
+export default class LabelDelete extends BaseCommand {
   static override args = {
     labelId: Args.string({description: 'Label ID', required: true}),
   }
@@ -14,7 +15,7 @@ export default class LabelDelete extends Command {
     profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
   }
 
-  public async run(): Promise<void> {
+  public async run(): Promise<ApiResult> {
     const {args, flags} = await this.parse(LabelDelete)
     const pm = createProfileManager<Config>(this.config, flags.profile, 'trello-config.json')
     const auth = await pm.loadAuthConfig()
@@ -24,7 +25,6 @@ export default class LabelDelete extends Command {
 
     const result = await deleteLabel(auth, args.labelId)
     clearClients()
-
-    this.logJson(result)
+    return result
   }
 }

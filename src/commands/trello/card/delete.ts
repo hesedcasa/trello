@@ -1,10 +1,11 @@
-import {createProfileManager} from '@hesed/plugin-lib'
-import {Args, Command, Flags} from '@oclif/core'
+import {type ApiResult, createProfileManager} from '@hesed/plugin-lib'
+import {Args, Flags} from '@oclif/core'
 
+import {BaseCommand} from '../../../base-command.js'
 import {type Config} from '../../../trello/trello-api.js'
 import {clearClients, deleteCard} from '../../../trello/trello-client.js'
 
-export default class CardDelete extends Command {
+export default class CardDelete extends BaseCommand {
   static override args = {
     cardId: Args.string({description: 'Card ID', required: true}),
   }
@@ -14,7 +15,7 @@ export default class CardDelete extends Command {
     profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
   }
 
-  public async run(): Promise<void> {
+  public async run(): Promise<ApiResult> {
     const {args, flags} = await this.parse(CardDelete)
     const pm = createProfileManager<Config>(this.config, flags.profile, 'trello-config.json')
     const auth = await pm.loadAuthConfig()
@@ -24,7 +25,6 @@ export default class CardDelete extends Command {
 
     const result = await deleteCard(auth, args.cardId)
     clearClients()
-
-    this.logJson(result)
+    return result
   }
 }

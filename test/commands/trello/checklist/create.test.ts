@@ -10,11 +10,8 @@ describe('checklist:create', () => {
   let mockCreateProfileManager: any
   let mockCreateChecklist: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -40,15 +37,11 @@ describe('checklist:create', () => {
 
   it('creates a checklist on a card', async () => {
     const command = new ChecklistCreate.default(['card123', 'My Checklist'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.have.property('id', 'cl1')
-    expect(jsonOutput.data).to.have.property('name', 'My Checklist')
+    expect(result.success).to.be.true
+    expect(result.data).to.have.property('id', 'cl1')
+    expect(result.data).to.have.property('name', 'My Checklist')
   })
 
   it('passes profile flag to createProfileManager', async () => {
@@ -69,7 +62,6 @@ describe('checklist:create', () => {
     })
 
     const command = new ChecklistCreate.default(['card123', 'My Checklist', '--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

@@ -10,11 +10,8 @@ describe('list:cards', () => {
   let mockCreateProfileManager: any
   let mockGetListCards: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -40,14 +37,10 @@ describe('list:cards', () => {
 
   it('retrieves cards in a list', async () => {
     const command = new ListCards.default(['list123'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.be.an('array')
+    expect(result.success).to.be.true
+    expect(result.data).to.be.an('array')
   })
 
   it('exits early when config is not available', async () => {
@@ -63,17 +56,15 @@ describe('list:cards', () => {
     })
 
     const command = new ListCards.default(['list123'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    let error: unknown
 
     try {
       await command.run()
-    } catch {
-      // expected error from this.error()
+    } catch (error_) {
+      error = error_
     }
 
-    expect(jsonOutput).to.be.null
+    expect(error).to.exist
   })
 
   it('passes profile flag to createProfileManager', async () => {
@@ -94,7 +85,6 @@ describe('list:cards', () => {
     })
 
     const command = new ListCards.default(['list123', '--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

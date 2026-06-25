@@ -10,11 +10,8 @@ describe('checklist:add-item', () => {
   let mockCreateProfileManager: any
   let mockCreateChecklistItem: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -40,14 +37,10 @@ describe('checklist:add-item', () => {
 
   it('adds an item to a checklist', async () => {
     const command = new ChecklistAddItem.default(['checklist123', 'Buy groceries'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.have.property('name', 'Buy groceries')
+    expect(result.success).to.be.true
+    expect(result.data).to.have.property('name', 'Buy groceries')
   })
 
   it('exits early when config is not available', async () => {
@@ -63,17 +56,15 @@ describe('checklist:add-item', () => {
     })
 
     const command = new ChecklistAddItem.default(['checklist123', 'Buy groceries'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    let error: unknown
 
     try {
       await command.run()
-    } catch {
-      // expected error from this.error()
+    } catch (error_) {
+      error = error_
     }
 
-    expect(jsonOutput).to.be.null
+    expect(error).to.exist
   })
 
   it('passes profile flag to createProfileManager', async () => {
@@ -97,7 +88,6 @@ describe('checklist:add-item', () => {
       ['checklist123', 'Buy groceries', '--profile', 'work'],
       createMockConfig(),
     )
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')
