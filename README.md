@@ -26,7 +26,7 @@ $ npm install -g @hesed/trello
 $ trello COMMAND
 running command...
 $ trello (--version)
-@hesed/trello/0.5.0 linux-x64 node-v22.22.3
+@hesed/trello/0.5.1 linux-x64 node-v22.23.0
 $ trello --help [COMMAND]
 USAGE
   $ trello COMMAND
@@ -97,7 +97,7 @@ EXAMPLES
   $ trello trello auth add -p prod
 ```
 
-_See code: [src/commands/trello/auth/add.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/auth/add.ts)_
+_See code: [src/commands/trello/auth/add.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/auth/add.ts)_
 
 ## `trello trello auth delete`
 
@@ -122,7 +122,7 @@ EXAMPLES
   $ trello trello auth delete -p prod
 ```
 
-_See code: [src/commands/trello/auth/delete.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/auth/delete.ts)_
+_See code: [src/commands/trello/auth/delete.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/auth/delete.ts)_
 
 ## `trello trello auth list`
 
@@ -142,7 +142,7 @@ EXAMPLES
   $ trello trello auth list
 ```
 
-_See code: [src/commands/trello/auth/list.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/auth/list.ts)_
+_See code: [src/commands/trello/auth/list.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/auth/list.ts)_
 
 ## `trello trello auth profile`
 
@@ -167,7 +167,7 @@ EXAMPLES
   $ trello trello auth profile --default test
 ```
 
-_See code: [src/commands/trello/auth/profile.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/auth/profile.ts)_
+_See code: [src/commands/trello/auth/profile.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/auth/profile.ts)_
 
 ## `trello trello auth test`
 
@@ -192,7 +192,7 @@ EXAMPLES
   $ trello trello auth test -p prod
 ```
 
-_See code: [src/commands/trello/auth/test.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/auth/test.ts)_
+_See code: [src/commands/trello/auth/test.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/auth/test.ts)_
 
 ## `trello trello auth update`
 
@@ -219,7 +219,7 @@ EXAMPLES
   $ trello trello auth update -p test
 ```
 
-_See code: [src/commands/trello/auth/update.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/auth/update.ts)_
+_See code: [src/commands/trello/auth/update.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/auth/update.ts)_
 
 ## `trello trello board cards BOARDID`
 
@@ -227,7 +227,7 @@ Get all cards on a board
 
 ```
 USAGE
-  $ trello trello board cards BOARDID [--filter <value>] [-p <value>] [--toon]
+  $ trello trello board cards BOARDID [--json] [--filter <value>] [-p <value>] [--toon]
 
 ARGUMENTS
   BOARDID  Board ID
@@ -237,6 +237,9 @@ FLAGS
       --filter=<value>   Filter cards (all, closed, none, open, visible)
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Get all cards on a board
 
@@ -244,7 +247,7 @@ EXAMPLES
   $ trello trello board cards 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/board/cards.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/board/cards.ts)_
+_See code: [src/commands/trello/board/cards.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/board/cards.ts)_
 
 ## `trello trello board get BOARDID`
 
@@ -252,7 +255,7 @@ Get details of a specific board
 
 ```
 USAGE
-  $ trello trello board get BOARDID [-p <value>] [--toon]
+  $ trello trello board get BOARDID [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   BOARDID  Board ID
@@ -260,6 +263,9 @@ ARGUMENTS
 FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Get details of a specific board
@@ -268,7 +274,7 @@ EXAMPLES
   $ trello trello board get 5a1b2c3d4e5f6g7h8i9j
 ```
 
-_See code: [src/commands/trello/board/get.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/board/get.ts)_
+_See code: [src/commands/trello/board/get.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/board/get.ts)_
 
 ## `trello trello board list`
 
@@ -276,13 +282,17 @@ List all boards for the authenticated member
 
 ```
 USAGE
-  $ trello trello board list [--filter all|closed|members|open|organization|public|starred] [-p <value>] [--toon]
+  $ trello trello board list [--json] [--filter all|closed|members|open|organization|public|starred] [-p <value>]
+    [--toon]
 
 FLAGS
   -p, --profile=<value>  Authentication profile name
       --filter=<option>  [default: open] Filter boards by status
                          <options: all|closed|members|open|organization|public|starred>
       --toon             Format output as toon
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   List all boards for the authenticated member
@@ -291,7 +301,7 @@ EXAMPLES
   $ trello trello board list
 ```
 
-_See code: [src/commands/trello/board/list.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/board/list.ts)_
+_See code: [src/commands/trello/board/list.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/board/list.ts)_
 
 ## `trello trello board lists BOARDID`
 
@@ -299,7 +309,7 @@ Get all lists on a board
 
 ```
 USAGE
-  $ trello trello board lists BOARDID [-p <value>] [--toon]
+  $ trello trello board lists BOARDID [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   BOARDID  Board ID
@@ -307,6 +317,9 @@ ARGUMENTS
 FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Get all lists on a board
@@ -315,7 +328,7 @@ EXAMPLES
   $ trello trello board lists 5a1b2c3d4e5f6g7h8i9j
 ```
 
-_See code: [src/commands/trello/board/lists.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/board/lists.ts)_
+_See code: [src/commands/trello/board/lists.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/board/lists.ts)_
 
 ## `trello trello board members BOARDID`
 
@@ -323,7 +336,7 @@ Get all members of a board
 
 ```
 USAGE
-  $ trello trello board members BOARDID [-p <value>] [--toon]
+  $ trello trello board members BOARDID [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   BOARDID  Board ID
@@ -332,6 +345,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Get all members of a board
 
@@ -339,7 +355,7 @@ EXAMPLES
   $ trello trello board members 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/board/members.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/board/members.ts)_
+_See code: [src/commands/trello/board/members.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/board/members.ts)_
 
 ## `trello trello card comments CARDID`
 
@@ -347,7 +363,7 @@ Get comments on a card
 
 ```
 USAGE
-  $ trello trello card comments CARDID [-p <value>] [--toon]
+  $ trello trello card comments CARDID [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   CARDID  Card ID
@@ -356,6 +372,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Get comments on a card
 
@@ -363,7 +382,7 @@ EXAMPLES
   $ trello trello card comments 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/card/comments.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/card/comments.ts)_
+_See code: [src/commands/trello/card/comments.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/card/comments.ts)_
 
 ## `trello trello card create LISTID NAME`
 
@@ -371,7 +390,7 @@ Create a new card
 
 ```
 USAGE
-  $ trello trello card create LISTID NAME [--desc <value>] [--pos top|bottom] [-p <value>] [--toon]
+  $ trello trello card create LISTID NAME [--json] [--desc <value>] [--pos top|bottom] [-p <value>] [--toon]
 
 ARGUMENTS
   LISTID  List ID to add the card to
@@ -384,6 +403,9 @@ FLAGS
                          <options: top|bottom>
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Create a new card
 
@@ -393,7 +415,7 @@ EXAMPLES
   $ trello trello card create 5a1b2c3d "My new card" --desc "Card description" --pos top
 ```
 
-_See code: [src/commands/trello/card/create.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/card/create.ts)_
+_See code: [src/commands/trello/card/create.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/card/create.ts)_
 
 ## `trello trello card delete CARDID`
 
@@ -401,13 +423,16 @@ Delete a card
 
 ```
 USAGE
-  $ trello trello card delete CARDID [-p <value>]
+  $ trello trello card delete CARDID [--json] [-p <value>]
 
 ARGUMENTS
   CARDID  Card ID
 
 FLAGS
   -p, --profile=<value>  Authentication profile name
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Delete a card
@@ -416,7 +441,7 @@ EXAMPLES
   $ trello trello card delete 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/card/delete.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/card/delete.ts)_
+_See code: [src/commands/trello/card/delete.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/card/delete.ts)_
 
 ## `trello trello card get CARDID`
 
@@ -424,7 +449,7 @@ Get details of a specific card
 
 ```
 USAGE
-  $ trello trello card get CARDID [-p <value>] [--toon]
+  $ trello trello card get CARDID [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   CARDID  Card ID
@@ -433,6 +458,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Get details of a specific card
 
@@ -440,7 +468,7 @@ EXAMPLES
   $ trello trello card get 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/card/get.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/card/get.ts)_
+_See code: [src/commands/trello/card/get.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/card/get.ts)_
 
 ## `trello trello card move CARDID LISTID`
 
@@ -448,7 +476,7 @@ Move a card to a different list
 
 ```
 USAGE
-  $ trello trello card move CARDID LISTID [--board <value>] [-p <value>] [--toon]
+  $ trello trello card move CARDID LISTID [--json] [--board <value>] [-p <value>] [--toon]
 
 ARGUMENTS
   CARDID  Card ID
@@ -459,6 +487,9 @@ FLAGS
       --board=<value>    Target board ID (for cross-board moves)
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Move a card to a different list
 
@@ -468,7 +499,7 @@ EXAMPLES
   $ trello trello card move cardId123 listId456 --board boardId789
 ```
 
-_See code: [src/commands/trello/card/move.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/card/move.ts)_
+_See code: [src/commands/trello/card/move.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/card/move.ts)_
 
 ## `trello trello card search QUERY`
 
@@ -476,7 +507,7 @@ Search for cards
 
 ```
 USAGE
-  $ trello trello card search QUERY [--boards <value>] [-p <value>] [--toon]
+  $ trello trello card search QUERY [--json] [--boards <value>] [-p <value>] [--toon]
 
 ARGUMENTS
   QUERY  Search query
@@ -485,6 +516,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --boards=<value>   Comma-separated board IDs to search within
       --toon             Format output as toon
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Search for cards
@@ -495,7 +529,7 @@ EXAMPLES
   $ trello trello card search "bug fix" --boards boardId1,boardId2
 ```
 
-_See code: [src/commands/trello/card/search.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/card/search.ts)_
+_See code: [src/commands/trello/card/search.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/card/search.ts)_
 
 ## `trello trello card update CARDID`
 
@@ -503,7 +537,7 @@ Update an existing card
 
 ```
 USAGE
-  $ trello trello card update CARDID --fields <value>... [-p <value>] [--toon]
+  $ trello trello card update CARDID --fields <value>... [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   CARDID  Card ID
@@ -513,6 +547,9 @@ FLAGS
       --fields=<value>...  (required) Card fields to update in key=value format
       --toon               Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Update an existing card
 
@@ -520,7 +557,7 @@ EXAMPLES
   $ trello trello card update 5a1b2c3d --fields name="Updated name" desc="New description"
 ```
 
-_See code: [src/commands/trello/card/update.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/card/update.ts)_
+_See code: [src/commands/trello/card/update.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/card/update.ts)_
 
 ## `trello trello checklist add-item CHECKLISTID NAME`
 
@@ -528,7 +565,7 @@ Add an item to a checklist
 
 ```
 USAGE
-  $ trello trello checklist add-item CHECKLISTID NAME [-p <value>] [--toon]
+  $ trello trello checklist add-item CHECKLISTID NAME [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   CHECKLISTID  Checklist ID
@@ -538,6 +575,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Add an item to a checklist
 
@@ -545,7 +585,7 @@ EXAMPLES
   $ trello trello checklist add-item checklistId123 "Buy groceries"
 ```
 
-_See code: [src/commands/trello/checklist/add-item.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/checklist/add-item.ts)_
+_See code: [src/commands/trello/checklist/add-item.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/checklist/add-item.ts)_
 
 ## `trello trello checklist create CARDID NAME`
 
@@ -553,7 +593,7 @@ Create a new checklist on a card
 
 ```
 USAGE
-  $ trello trello checklist create CARDID NAME [-p <value>] [--toon]
+  $ trello trello checklist create CARDID NAME [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   CARDID  Card ID
@@ -563,6 +603,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Create a new checklist on a card
 
@@ -570,7 +613,7 @@ EXAMPLES
   $ trello trello checklist create cardId123 "My Checklist"
 ```
 
-_See code: [src/commands/trello/checklist/create.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/checklist/create.ts)_
+_See code: [src/commands/trello/checklist/create.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/checklist/create.ts)_
 
 ## `trello trello checklist delete CHECKLISTID`
 
@@ -578,13 +621,16 @@ Delete a checklist
 
 ```
 USAGE
-  $ trello trello checklist delete CHECKLISTID [-p <value>]
+  $ trello trello checklist delete CHECKLISTID [--json] [-p <value>]
 
 ARGUMENTS
   CHECKLISTID  Checklist ID
 
 FLAGS
   -p, --profile=<value>  Authentication profile name
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Delete a checklist
@@ -593,7 +639,7 @@ EXAMPLES
   $ trello trello checklist delete 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/checklist/delete.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/checklist/delete.ts)_
+_See code: [src/commands/trello/checklist/delete.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/checklist/delete.ts)_
 
 ## `trello trello checklist delete-item CHECKLISTID CHECKITEMID`
 
@@ -601,7 +647,7 @@ Delete an item from a checklist
 
 ```
 USAGE
-  $ trello trello checklist delete-item CHECKLISTID CHECKITEMID [-p <value>]
+  $ trello trello checklist delete-item CHECKLISTID CHECKITEMID [--json] [-p <value>]
 
 ARGUMENTS
   CHECKLISTID  Checklist ID
@@ -610,6 +656,9 @@ ARGUMENTS
 FLAGS
   -p, --profile=<value>  Authentication profile name
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Delete an item from a checklist
 
@@ -617,7 +666,7 @@ EXAMPLES
   $ trello trello checklist delete-item checklistId123 itemId456
 ```
 
-_See code: [src/commands/trello/checklist/delete-item.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/checklist/delete-item.ts)_
+_See code: [src/commands/trello/checklist/delete-item.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/checklist/delete-item.ts)_
 
 ## `trello trello checklist get CHECKLISTID`
 
@@ -625,7 +674,7 @@ Get details of a specific checklist
 
 ```
 USAGE
-  $ trello trello checklist get CHECKLISTID [-p <value>] [--toon]
+  $ trello trello checklist get CHECKLISTID [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   CHECKLISTID  Checklist ID
@@ -634,6 +683,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Get details of a specific checklist
 
@@ -641,7 +693,7 @@ EXAMPLES
   $ trello trello checklist get 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/checklist/get.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/checklist/get.ts)_
+_See code: [src/commands/trello/checklist/get.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/checklist/get.ts)_
 
 ## `trello trello comment add CARDID TEXT`
 
@@ -649,7 +701,7 @@ Add a comment to a card
 
 ```
 USAGE
-  $ trello trello comment add CARDID TEXT [-p <value>] [--toon]
+  $ trello trello comment add CARDID TEXT [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   CARDID  Card ID
@@ -658,6 +710,9 @@ ARGUMENTS
 FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Add a comment to a card
@@ -674,7 +729,7 @@ EXAMPLES
   $ trello trello comment add cardId123 "Check [this](https://example.com) link"
 ```
 
-_See code: [src/commands/trello/comment/add.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/comment/add.ts)_
+_See code: [src/commands/trello/comment/add.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/comment/add.ts)_
 
 ## `trello trello comment delete CARDID ACTIONID`
 
@@ -682,7 +737,7 @@ Delete a comment from a card
 
 ```
 USAGE
-  $ trello trello comment delete CARDID ACTIONID [-p <value>]
+  $ trello trello comment delete CARDID ACTIONID [--json] [-p <value>]
 
 ARGUMENTS
   CARDID    Card ID
@@ -691,6 +746,9 @@ ARGUMENTS
 FLAGS
   -p, --profile=<value>  Authentication profile name
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Delete a comment from a card
 
@@ -698,7 +756,7 @@ EXAMPLES
   $ trello trello comment delete cardId123 actionId456
 ```
 
-_See code: [src/commands/trello/comment/delete.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/comment/delete.ts)_
+_See code: [src/commands/trello/comment/delete.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/comment/delete.ts)_
 
 ## `trello trello comment update CARDID ACTIONID TEXT`
 
@@ -706,7 +764,7 @@ Update a comment on a card
 
 ```
 USAGE
-  $ trello trello comment update CARDID ACTIONID TEXT [-p <value>] [--toon]
+  $ trello trello comment update CARDID ACTIONID TEXT [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   CARDID    Card ID
@@ -716,6 +774,9 @@ ARGUMENTS
 FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Update a comment on a card
@@ -732,7 +793,7 @@ EXAMPLES
   $ trello trello comment update cardId123 actionId456 "Check [this](https://example.com) link"
 ```
 
-_See code: [src/commands/trello/comment/update.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/comment/update.ts)_
+_See code: [src/commands/trello/comment/update.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/comment/update.ts)_
 
 ## `trello trello label create BOARDID NAME COLOR`
 
@@ -740,7 +801,7 @@ Create a new label on a board
 
 ```
 USAGE
-  $ trello trello label create BOARDID NAME COLOR [-p <value>] [--toon]
+  $ trello trello label create BOARDID NAME COLOR [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   BOARDID  Board ID
@@ -751,6 +812,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Create a new label on a board
 
@@ -758,7 +822,7 @@ EXAMPLES
   $ trello trello label create 5a1b2c3d "Bug" red
 ```
 
-_See code: [src/commands/trello/label/create.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/label/create.ts)_
+_See code: [src/commands/trello/label/create.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/label/create.ts)_
 
 ## `trello trello label delete LABELID`
 
@@ -766,13 +830,16 @@ Delete a label
 
 ```
 USAGE
-  $ trello trello label delete LABELID [-p <value>]
+  $ trello trello label delete LABELID [--json] [-p <value>]
 
 ARGUMENTS
   LABELID  Label ID
 
 FLAGS
   -p, --profile=<value>  Authentication profile name
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Delete a label
@@ -781,7 +848,7 @@ EXAMPLES
   $ trello trello label delete 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/label/delete.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/label/delete.ts)_
+_See code: [src/commands/trello/label/delete.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/label/delete.ts)_
 
 ## `trello trello label list BOARDID`
 
@@ -789,7 +856,7 @@ List all labels on a board
 
 ```
 USAGE
-  $ trello trello label list BOARDID [-p <value>] [--toon]
+  $ trello trello label list BOARDID [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   BOARDID  Board ID
@@ -798,6 +865,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   List all labels on a board
 
@@ -805,7 +875,7 @@ EXAMPLES
   $ trello trello label list 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/label/list.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/label/list.ts)_
+_See code: [src/commands/trello/label/list.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/label/list.ts)_
 
 ## `trello trello list archive LISTID`
 
@@ -813,7 +883,7 @@ Archive a list or all cards in a list
 
 ```
 USAGE
-  $ trello trello list archive LISTID [--cards-only] [-p <value>]
+  $ trello trello list archive LISTID [--json] [--cards-only] [-p <value>]
 
 ARGUMENTS
   LISTID  List ID
@@ -821,6 +891,9 @@ ARGUMENTS
 FLAGS
   -p, --profile=<value>  Authentication profile name
       --cards-only       Only archive cards in the list, not the list itself
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Archive a list or all cards in a list
@@ -831,7 +904,7 @@ EXAMPLES
   $ trello trello list archive 5a1b2c3d --cards-only
 ```
 
-_See code: [src/commands/trello/list/archive.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/list/archive.ts)_
+_See code: [src/commands/trello/list/archive.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/list/archive.ts)_
 
 ## `trello trello list cards LISTID`
 
@@ -839,7 +912,7 @@ Get all cards in a list
 
 ```
 USAGE
-  $ trello trello list cards LISTID [-p <value>] [--toon]
+  $ trello trello list cards LISTID [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   LISTID  List ID
@@ -848,6 +921,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Get all cards in a list
 
@@ -855,7 +931,7 @@ EXAMPLES
   $ trello trello list cards 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/list/cards.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/list/cards.ts)_
+_See code: [src/commands/trello/list/cards.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/list/cards.ts)_
 
 ## `trello trello list create BOARDID NAME`
 
@@ -863,7 +939,7 @@ Create a new list on a board
 
 ```
 USAGE
-  $ trello trello list create BOARDID NAME [--pos top|bottom] [-p <value>] [--toon]
+  $ trello trello list create BOARDID NAME [--json] [--pos top|bottom] [-p <value>] [--toon]
 
 ARGUMENTS
   BOARDID  Board ID
@@ -875,6 +951,9 @@ FLAGS
                          <options: top|bottom>
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Create a new list on a board
 
@@ -884,7 +963,7 @@ EXAMPLES
   $ trello trello list create 5a1b2c3d "Done" --pos bottom
 ```
 
-_See code: [src/commands/trello/list/create.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/list/create.ts)_
+_See code: [src/commands/trello/list/create.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/list/create.ts)_
 
 ## `trello trello list get LISTID`
 
@@ -892,7 +971,7 @@ Get details of a specific list
 
 ```
 USAGE
-  $ trello trello list get LISTID [-p <value>] [--toon]
+  $ trello trello list get LISTID [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   LISTID  List ID
@@ -901,6 +980,9 @@ FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
 
+GLOBAL FLAGS
+  --json  Format output as json.
+
 DESCRIPTION
   Get details of a specific list
 
@@ -908,7 +990,7 @@ EXAMPLES
   $ trello trello list get 5a1b2c3d
 ```
 
-_See code: [src/commands/trello/list/get.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/list/get.ts)_
+_See code: [src/commands/trello/list/get.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/list/get.ts)_
 
 ## `trello trello member get [MEMBERID]`
 
@@ -916,7 +998,7 @@ Get member details
 
 ```
 USAGE
-  $ trello trello member get [MEMBERID] [-p <value>] [--toon]
+  $ trello trello member get [MEMBERID] [--json] [-p <value>] [--toon]
 
 ARGUMENTS
   [MEMBERID]  [default: me] Member ID or username (defaults to "me")
@@ -924,6 +1006,9 @@ ARGUMENTS
 FLAGS
   -p, --profile=<value>  Authentication profile name
       --toon             Format output as toon
+
+GLOBAL FLAGS
+  --json  Format output as json.
 
 DESCRIPTION
   Get member details
@@ -936,5 +1021,5 @@ EXAMPLES
   $ trello trello member get johndoe
 ```
 
-_See code: [src/commands/trello/member/get.ts](https://github.com/hesedcasa/trello/blob/v0.5.0/src/commands/trello/member/get.ts)_
+_See code: [src/commands/trello/member/get.ts](https://github.com/hesedcasa/trello/blob/v0.5.1/src/commands/trello/member/get.ts)_
 <!-- commandsstop -->
