@@ -1,10 +1,11 @@
-import {createProfileManager, formatAsToon} from '@hesed/plugin-lib'
-import {Args, Command, Flags} from '@oclif/core'
+import {type ApiResult, createProfileManager, formatAsToon} from '@hesed/plugin-lib'
+import {Args, Flags} from '@oclif/core'
 
+import {BaseCommand} from '../../../base-command.js'
 import {type Config} from '../../../trello/trello-api.js'
 import {clearClients, updateCard} from '../../../trello/trello-client.js'
 
-export default class CardUpdate extends Command {
+export default class CardUpdate extends BaseCommand {
   static override args = {
     cardId: Args.string({description: 'Card ID', required: true}),
   }
@@ -18,7 +19,7 @@ export default class CardUpdate extends Command {
     toon: Flags.boolean({description: 'Format output as toon', required: false}),
   }
 
-  public async run(): Promise<void> {
+  public async run(): Promise<ApiResult> {
     const {args, flags} = await this.parse(CardUpdate)
     const pm = createProfileManager<Config>(this.config, flags.profile, 'trello-config.json')
     const auth = await pm.loadAuthConfig()
@@ -40,8 +41,8 @@ export default class CardUpdate extends Command {
 
     if (flags.toon) {
       this.log(formatAsToon(result))
-    } else {
-      this.logJson(result)
     }
+
+    return result
   }
 }

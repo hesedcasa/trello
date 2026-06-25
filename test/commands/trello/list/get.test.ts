@@ -10,11 +10,8 @@ describe('list:get', () => {
   let mockCreateProfileManager: any
   let mockGetList: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -40,15 +37,11 @@ describe('list:get', () => {
 
   it('retrieves list with valid list ID', async () => {
     const command = new ListGet.default(['list123'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.have.property('id', 'list123')
-    expect(jsonOutput.data).to.have.property('name', 'Test List')
+    expect(result.success).to.be.true
+    expect(result.data).to.have.property('id', 'list123')
+    expect(result.data).to.have.property('name', 'Test List')
   })
 
   it('calls clearClients after execution', async () => {
@@ -68,8 +61,6 @@ describe('list:get', () => {
     })
 
     const command = new ListGet.default(['list123'], createMockConfig())
-    command.logJson = () => {}
-
     await command.run()
     expect(clearClientsCalled).to.be.true
   })
@@ -92,7 +83,6 @@ describe('list:get', () => {
     })
 
     const command = new ListGet.default(['list123', '--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

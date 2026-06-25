@@ -11,11 +11,9 @@ describe('board:get', () => {
   let mockGetBoard: any
   let mockClearClients: any
   let logOutput: string[]
-  let jsonOutput: any
 
   beforeEach(async () => {
     logOutput = []
-    jsonOutput = null
 
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
@@ -46,16 +44,12 @@ describe('board:get', () => {
 
   it('retrieves board with valid board ID', async () => {
     const command = new BoardGet.default(['board123'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput).to.not.be.null
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.have.property('id', 'board123')
-    expect(jsonOutput.data).to.have.property('name', 'Test Board')
+    expect(result).to.not.be.null
+    expect(result.success).to.be.true
+    expect(result.data).to.have.property('id', 'board123')
+    expect(result.data).to.have.property('name', 'Test Board')
   })
 
   it('formats output as TOON when --toon flag is provided', async () => {
@@ -83,14 +77,10 @@ describe('board:get', () => {
     })
 
     const command = new BoardGet.default(['INVALID'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.false
-    expect(jsonOutput.error).to.include('Board not found')
+    expect(result.success).to.be.false
+    expect(result.error).to.include('Board not found')
   })
 
   it('exits early when config is not available', async () => {
@@ -106,17 +96,15 @@ describe('board:get', () => {
     })
 
     const command = new BoardGet.default(['board123'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    let error: unknown
 
     try {
       await command.run()
-    } catch {
-      // expected error from this.error()
+    } catch (error_) {
+      error = error_
     }
 
-    expect(jsonOutput).to.be.null
+    expect(error).to.exist
   })
 
   it('calls clearClients after execution', async () => {
@@ -136,8 +124,6 @@ describe('board:get', () => {
     })
 
     const command = new BoardGet.default(['board123'], createMockConfig())
-    command.logJson = () => {}
-
     await command.run()
     expect(clearClientsCalled).to.be.true
   })
@@ -160,7 +146,6 @@ describe('board:get', () => {
     })
 
     const command = new BoardGet.default(['board123', '--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

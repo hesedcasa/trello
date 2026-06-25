@@ -1,10 +1,11 @@
-import {createProfileManager, formatAsToon} from '@hesed/plugin-lib'
-import {Args, Command, Flags} from '@oclif/core'
+import {type ApiResult, createProfileManager, formatAsToon} from '@hesed/plugin-lib'
+import {Args, Flags} from '@oclif/core'
 
+import {BaseCommand} from '../../../base-command.js'
 import {type Config} from '../../../trello/trello-api.js'
 import {clearClients, createLabel} from '../../../trello/trello-client.js'
 
-export default class LabelCreate extends Command {
+export default class LabelCreate extends BaseCommand {
   /* eslint-disable perfectionist/sort-objects */
   static override args = {
     boardId: Args.string({description: 'Board ID', required: true}),
@@ -23,7 +24,7 @@ export default class LabelCreate extends Command {
     toon: Flags.boolean({description: 'Format output as toon', required: false}),
   }
 
-  public async run(): Promise<void> {
+  public async run(): Promise<ApiResult> {
     const {args, flags} = await this.parse(LabelCreate)
     const pm = createProfileManager<Config>(this.config, flags.profile, 'trello-config.json')
     const auth = await pm.loadAuthConfig()
@@ -36,8 +37,8 @@ export default class LabelCreate extends Command {
 
     if (flags.toon) {
       this.log(formatAsToon(result))
-    } else {
-      this.logJson(result)
     }
+
+    return result
   }
 }

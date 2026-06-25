@@ -10,11 +10,8 @@ describe('comment:delete', () => {
   let mockCreateProfileManager: any
   let mockDeleteCardComment: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -35,13 +32,9 @@ describe('comment:delete', () => {
 
   it('deletes a comment', async () => {
     const command = new CommentDelete.default(['card123', 'action456'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
+    expect(result.success).to.be.true
   })
 
   it('exits early when config is not available', async () => {
@@ -56,17 +49,15 @@ describe('comment:delete', () => {
     })
 
     const command = new CommentDelete.default(['card123', 'action456'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    let error: unknown
 
     try {
       await command.run()
-    } catch {
-      // expected error from this.error()
+    } catch (error_) {
+      error = error_
     }
 
-    expect(jsonOutput).to.be.null
+    expect(error).to.exist
   })
 
   it('passes profile flag to createProfileManager', async () => {
@@ -86,7 +77,6 @@ describe('comment:delete', () => {
     })
 
     const command = new CommentDelete.default(['card123', 'action456', '--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

@@ -11,11 +11,8 @@ describe('list:archive', () => {
   let mockArchiveList: any
   let mockArchiveAllCardsInList: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -38,25 +35,17 @@ describe('list:archive', () => {
 
   it('archives a list', async () => {
     const command = new ListArchive.default(['list123'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
+    expect(result.success).to.be.true
   })
 
   it('archives only cards with --cards-only flag', async () => {
     const command = new ListArchive.default(['list123', '--cards-only'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.be.true
+    expect(result.success).to.be.true
+    expect(result.data).to.be.true
   })
 
   it('exits early when config is not available', async () => {
@@ -72,17 +61,15 @@ describe('list:archive', () => {
     })
 
     const command = new ListArchive.default(['list123'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    let error: unknown
 
     try {
       await command.run()
-    } catch {
-      // expected error from this.error()
+    } catch (error_) {
+      error = error_
     }
 
-    expect(jsonOutput).to.be.null
+    expect(error).to.exist
   })
 
   it('passes profile flag to createProfileManager', async () => {
@@ -103,7 +90,6 @@ describe('list:archive', () => {
     })
 
     const command = new ListArchive.default(['list123', '--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

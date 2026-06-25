@@ -10,11 +10,8 @@ describe('comment:add', () => {
   let mockCreateProfileManager: any
   let mockAddCardComment: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -40,14 +37,10 @@ describe('comment:add', () => {
 
   it('adds a comment to a card', async () => {
     const command = new CommentAdd.default(['card123', 'Test comment'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.have.property('id', 'action1')
+    expect(result.success).to.be.true
+    expect(result.data).to.have.property('id', 'action1')
   })
 
   it('exits early when config is not available', async () => {
@@ -63,17 +56,15 @@ describe('comment:add', () => {
     })
 
     const command = new CommentAdd.default(['card123', 'Test comment'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    let error: unknown
 
     try {
       await command.run()
-    } catch {
-      // expected error from this.error()
+    } catch (error_) {
+      error = error_
     }
 
-    expect(jsonOutput).to.be.null
+    expect(error).to.exist
   })
 
   it('passes profile flag to createProfileManager', async () => {
@@ -94,7 +85,6 @@ describe('comment:add', () => {
     })
 
     const command = new CommentAdd.default(['card123', 'Test comment', '--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

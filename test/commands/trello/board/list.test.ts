@@ -10,11 +10,8 @@ describe('board:list', () => {
   let mockCreateProfileManager: any
   let mockGetMyBoards: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -43,15 +40,11 @@ describe('board:list', () => {
 
   it('lists all boards', async () => {
     const command = new BoardList.default([], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.be.an('array')
-    expect(jsonOutput.data).to.have.lengthOf(2)
+    expect(result.success).to.be.true
+    expect(result.data).to.be.an('array')
+    expect(result.data).to.have.lengthOf(2)
   })
 
   it('exits early when config is not available', async () => {
@@ -67,17 +60,15 @@ describe('board:list', () => {
     })
 
     const command = new BoardList.default([], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    let error: unknown
 
     try {
       await command.run()
-    } catch {
-      // expected error from this.error()
+    } catch (error_) {
+      error = error_
     }
 
-    expect(jsonOutput).to.be.null
+    expect(error).to.exist
   })
 
   it('passes profile flag to createProfileManager', async () => {
@@ -98,7 +89,6 @@ describe('board:list', () => {
     })
 
     const command = new BoardList.default(['--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

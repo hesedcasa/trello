@@ -10,11 +10,8 @@ describe('card:get', () => {
   let mockCreateProfileManager: any
   let mockGetCard: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -44,16 +41,12 @@ describe('card:get', () => {
 
   it('retrieves card with valid card ID', async () => {
     const command = new CardGet.default(['card123'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput).to.not.be.null
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.have.property('id', 'card123')
-    expect(jsonOutput.data).to.have.property('name', 'Test Card')
+    expect(result).to.not.be.null
+    expect(result.success).to.be.true
+    expect(result.data).to.have.property('id', 'card123')
+    expect(result.data).to.have.property('name', 'Test Card')
   })
 
   it('handles API errors gracefully', async () => {
@@ -69,13 +62,9 @@ describe('card:get', () => {
     })
 
     const command = new CardGet.default(['INVALID'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.false
+    expect(result.success).to.be.false
   })
 
   it('calls clearClients after execution', async () => {
@@ -95,8 +84,6 @@ describe('card:get', () => {
     })
 
     const command = new CardGet.default(['card123'], createMockConfig())
-    command.logJson = () => {}
-
     await command.run()
     expect(clearClientsCalled).to.be.true
   })
@@ -119,7 +106,6 @@ describe('card:get', () => {
     })
 
     const command = new CardGet.default(['card123', '--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

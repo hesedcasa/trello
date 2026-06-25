@@ -10,11 +10,8 @@ describe('card:move', () => {
   let mockCreateProfileManager: any
   let mockMoveCard: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -40,25 +37,17 @@ describe('card:move', () => {
 
   it('moves a card to another list', async () => {
     const command = new CardMove.default(['card123', 'list456'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.have.property('idList', 'list456')
+    expect(result.success).to.be.true
+    expect(result.data).to.have.property('idList', 'list456')
   })
 
   it('moves a card across boards with --board flag', async () => {
     const command = new CardMove.default(['card123', 'list456', '--board', 'board789'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
+    expect(result.success).to.be.true
   })
 
   it('exits early when config is not available', async () => {
@@ -74,17 +63,15 @@ describe('card:move', () => {
     })
 
     const command = new CardMove.default(['card123', 'list456'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    let error: unknown
 
     try {
       await command.run()
-    } catch {
-      // expected error from this.error()
+    } catch (error_) {
+      error = error_
     }
 
-    expect(jsonOutput).to.be.null
+    expect(error).to.exist
   })
 
   it('passes profile flag to createProfileManager', async () => {
@@ -105,7 +92,6 @@ describe('card:move', () => {
     })
 
     const command = new CardMove.default(['card123', 'list456', '--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')

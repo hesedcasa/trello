@@ -10,11 +10,8 @@ describe('member:get', () => {
   let mockCreateProfileManager: any
   let mockGetMember: any
   let mockClearClients: any
-  let jsonOutput: any
 
   beforeEach(async () => {
-    jsonOutput = null
-
     mockCreateProfileManager = () => ({
       loadAuthConfig: async () => ({apiKey: 'test-key', apiToken: 'test-token'}),
     })
@@ -40,27 +37,19 @@ describe('member:get', () => {
 
   it('retrieves member with default "me"', async () => {
     const command = new MemberGet.default([], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.have.property('id', 'me')
-    expect(jsonOutput.data).to.have.property('fullName', 'Test User')
+    expect(result.success).to.be.true
+    expect(result.data).to.have.property('id', 'me')
+    expect(result.data).to.have.property('fullName', 'Test User')
   })
 
   it('retrieves specific member by ID', async () => {
     const command = new MemberGet.default(['johndoe'], createMockConfig())
-    command.logJson = (output: any) => {
-      jsonOutput = output
-    }
+    const result = await command.run()
 
-    await command.run()
-
-    expect(jsonOutput.success).to.be.true
-    expect(jsonOutput.data).to.have.property('id', 'johndoe')
+    expect(result.success).to.be.true
+    expect(result.data).to.have.property('id', 'johndoe')
   })
 
   it('passes profile flag to createProfileManager', async () => {
@@ -81,7 +70,6 @@ describe('member:get', () => {
     })
 
     const command = new MemberGet.default(['--profile', 'work'], createMockConfig())
-    command.logJson = () => {}
     await command.run()
 
     expect(capturedProfile).to.equal('work')
