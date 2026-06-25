@@ -1,7 +1,7 @@
 {
   "name": "@hesed/trello",
   "description": "CLI for Trello API interaction",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "author": "Hesed",
   "bin": {
     "trello": "./bin/run.js"

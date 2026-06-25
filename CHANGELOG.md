@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/hesedcasa/trello/compare/v0.5.0...v0.5.1) (2026-06-25)
+
+
+### ♻️ Chores
+
+* introduce BaseCommand to centralize run() return and JSON ([#32](https://github.com/hesedcasa/trello/issues/32)) ([6a349e7](https://github.com/hesedcasa/trello/commit/6a349e7b2838cf0e9175ada24135acfba96105da))
+
 ## [0.5.0](https://github.com/hesedcasa/trello/compare/v0.4.0...v0.5.0) (2026-06-14)
 
 
