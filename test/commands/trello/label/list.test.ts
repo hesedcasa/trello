@@ -23,7 +23,7 @@ describe('label:list', () => {
 
     mockClearClients = () => {}
 
-    LabelList = await esmock('../../../../src/commands/trello/label/list.js', {
+    LabelList = await esmock('../../../../src/commands/trello/label/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoardLabels: mockGetBoardLabels,
@@ -44,7 +44,7 @@ describe('label:list', () => {
   })
 
   it('exits early when config is not available', async () => {
-    LabelList = await esmock('../../../../src/commands/trello/label/list.js', {
+    LabelList = await esmock('../../../../src/commands/trello/label/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoardLabels: mockGetBoardLabels,
@@ -70,7 +70,7 @@ describe('label:list', () => {
   it('passes profile flag to createProfileManager', async () => {
     let capturedProfile: string | undefined
 
-    LabelList = await esmock('../../../../src/commands/trello/label/list.js', {
+    LabelList = await esmock('../../../../src/commands/trello/label/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoardLabels: async () => ({data: [], success: true}),

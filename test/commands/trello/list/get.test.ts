@@ -23,7 +23,7 @@ describe('list:get', () => {
 
     mockClearClients = () => {}
 
-    ListGet = await esmock('../../../../src/commands/trello/list/get.js', {
+    ListGet = await esmock('../../../../src/commands/trello/list/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getList: mockGetList,
@@ -47,7 +47,7 @@ describe('list:get', () => {
   it('calls clearClients after execution', async () => {
     let clearClientsCalled = false
 
-    ListGet = await esmock('../../../../src/commands/trello/list/get.js', {
+    ListGet = await esmock('../../../../src/commands/trello/list/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients() {
           clearClientsCalled = true
@@ -68,7 +68,7 @@ describe('list:get', () => {
   it('passes profile flag to createProfileManager', async () => {
     let capturedProfile: string | undefined
 
-    ListGet = await esmock('../../../../src/commands/trello/list/get.js', {
+    ListGet = await esmock('../../../../src/commands/trello/list/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getList: async () => ({data: {}, success: true}),

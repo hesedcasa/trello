@@ -23,7 +23,7 @@ describe('checklist:get', () => {
 
     mockClearClients = () => {}
 
-    ChecklistGet = await esmock('../../../../src/commands/trello/checklist/get.js', {
+    ChecklistGet = await esmock('../../../../src/commands/trello/checklist/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getChecklist: mockGetChecklist,
@@ -44,7 +44,7 @@ describe('checklist:get', () => {
   })
 
   it('exits early when config is not available', async () => {
-    ChecklistGet = await esmock('../../../../src/commands/trello/checklist/get.js', {
+    ChecklistGet = await esmock('../../../../src/commands/trello/checklist/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getChecklist: mockGetChecklist,
@@ -70,7 +70,7 @@ describe('checklist:get', () => {
   it('passes profile flag to createProfileManager', async () => {
     let capturedProfile: string | undefined
 
-    ChecklistGet = await esmock('../../../../src/commands/trello/checklist/get.js', {
+    ChecklistGet = await esmock('../../../../src/commands/trello/checklist/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getChecklist: async () => ({data: {}, success: true}),

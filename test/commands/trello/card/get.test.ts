@@ -27,7 +27,7 @@ describe('card:get', () => {
 
     mockClearClients = () => {}
 
-    CardGet = await esmock('../../../../src/commands/trello/card/get.js', {
+    CardGet = await esmock('../../../../src/commands/trello/card/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getCard: mockGetCard,
@@ -50,7 +50,7 @@ describe('card:get', () => {
   })
 
   it('handles API errors gracefully', async () => {
-    CardGet = await esmock('../../../../src/commands/trello/card/get.js', {
+    CardGet = await esmock('../../../../src/commands/trello/card/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getCard: async () => ({error: 'Card not found', success: false}),
@@ -70,7 +70,7 @@ describe('card:get', () => {
   it('calls clearClients after execution', async () => {
     let clearClientsCalled = false
 
-    CardGet = await esmock('../../../../src/commands/trello/card/get.js', {
+    CardGet = await esmock('../../../../src/commands/trello/card/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients() {
           clearClientsCalled = true
@@ -91,7 +91,7 @@ describe('card:get', () => {
   it('passes profile flag to createProfileManager', async () => {
     let capturedProfile: string | undefined
 
-    CardGet = await esmock('../../../../src/commands/trello/card/get.js', {
+    CardGet = await esmock('../../../../src/commands/trello/card/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getCard: async () => ({data: {}, success: true}),
