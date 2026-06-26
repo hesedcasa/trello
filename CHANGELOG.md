@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.2](https://github.com/hesedcasa/trello/compare/v0.5.1...v0.5.2) (2026-06-26)
+
+
+### ♻️ Chores
+
+* rename command files to index.ts and add topic descriptions ([#34](https://github.com/hesedcasa/trello/issues/34)) ([152fb0e](https://github.com/hesedcasa/trello/commit/152fb0ecd246b49eee62ca6c6086289bf4861a52))
+
 ## [0.5.1](https://github.com/hesedcasa/trello/compare/v0.5.0...v0.5.1) (2026-06-25)
 
 
