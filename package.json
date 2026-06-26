@@ -58,10 +58,27 @@
     "dirname": "trello",
     "commands": "./dist/commands",
     "topicSeparator": " ",
-    "topics": {},
-    "update": {
-      "autoupdate": {
-        "debounce": 7
+    "topics": {
+      "trello": {
+        "description": "Commands for managing Trello workflows and operations"
+      },
+      "trello:board": {
+        "description": "Get details, cards, lists and members for board"
+      },
+      "trello:card": {
+        "description": "Perform various operations on card"
+      },
+      "trello:checklist": {
+        "description": "Perform various operations on checklist"
+      },
+      "trello:comment": {
+        "description": "Add, update or delete comment"
+      },
+      "trello:label": {
+        "description": "Get, create, or delete label"
+      },
+      "trello:list": {
+        "description": "Get, create or archive list, or get cards in list"
       }
     }
   },

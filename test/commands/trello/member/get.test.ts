@@ -23,7 +23,7 @@ describe('member:get', () => {
 
     mockClearClients = () => {}
 
-    MemberGet = await esmock('../../../../src/commands/trello/member/get.js', {
+    MemberGet = await esmock('../../../../src/commands/trello/member/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getMember: mockGetMember,
@@ -55,7 +55,7 @@ describe('member:get', () => {
   it('passes profile flag to createProfileManager', async () => {
     let capturedProfile: string | undefined
 
-    MemberGet = await esmock('../../../../src/commands/trello/member/get.js', {
+    MemberGet = await esmock('../../../../src/commands/trello/member/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getMember: async () => ({data: {}, success: true}),

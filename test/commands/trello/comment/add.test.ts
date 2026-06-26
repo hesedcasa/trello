@@ -23,7 +23,7 @@ describe('comment:add', () => {
 
     mockClearClients = () => {}
 
-    CommentAdd = await esmock('../../../../src/commands/trello/comment/add.js', {
+    CommentAdd = await esmock('../../../../src/commands/trello/comment/index.js', {
       '../../../../src/trello/trello-client.js': {
         addCardComment: mockAddCardComment,
         clearClients: mockClearClients,
@@ -44,7 +44,7 @@ describe('comment:add', () => {
   })
 
   it('exits early when config is not available', async () => {
-    CommentAdd = await esmock('../../../../src/commands/trello/comment/add.js', {
+    CommentAdd = await esmock('../../../../src/commands/trello/comment/index.js', {
       '../../../../src/trello/trello-client.js': {
         addCardComment: mockAddCardComment,
         clearClients: mockClearClients,
@@ -70,7 +70,7 @@ describe('comment:add', () => {
   it('passes profile flag to createProfileManager', async () => {
     let capturedProfile: string | undefined
 
-    CommentAdd = await esmock('../../../../src/commands/trello/comment/add.js', {
+    CommentAdd = await esmock('../../../../src/commands/trello/comment/index.js', {
       '../../../../src/trello/trello-client.js': {
         addCardComment: async () => ({data: {}, success: true}),
         clearClients: mockClearClients,

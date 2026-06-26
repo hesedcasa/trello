@@ -30,7 +30,7 @@ describe('board:get', () => {
 
     mockClearClients = () => {}
 
-    BoardGet = await esmock('../../../../src/commands/trello/board/get.js', {
+    BoardGet = await esmock('../../../../src/commands/trello/board/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoard: mockGetBoard,
@@ -65,7 +65,7 @@ describe('board:get', () => {
   })
 
   it('handles API errors gracefully', async () => {
-    BoardGet = await esmock('../../../../src/commands/trello/board/get.js', {
+    BoardGet = await esmock('../../../../src/commands/trello/board/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoard: async () => ({error: 'Board not found', success: false}),
@@ -84,7 +84,7 @@ describe('board:get', () => {
   })
 
   it('exits early when config is not available', async () => {
-    BoardGet = await esmock('../../../../src/commands/trello/board/get.js', {
+    BoardGet = await esmock('../../../../src/commands/trello/board/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoard: mockGetBoard,
@@ -110,7 +110,7 @@ describe('board:get', () => {
   it('calls clearClients after execution', async () => {
     let clearClientsCalled = false
 
-    BoardGet = await esmock('../../../../src/commands/trello/board/get.js', {
+    BoardGet = await esmock('../../../../src/commands/trello/board/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients() {
           clearClientsCalled = true
@@ -131,7 +131,7 @@ describe('board:get', () => {
   it('passes profile flag to createProfileManager', async () => {
     let capturedProfile: string | undefined
 
-    BoardGet = await esmock('../../../../src/commands/trello/board/get.js', {
+    BoardGet = await esmock('../../../../src/commands/trello/board/index.js', {
       '../../../../src/trello/trello-client.js': {
         clearClients: mockClearClients,
         getBoard: async () => ({data: {}, success: true}),
