@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/hesedcasa/trello/compare/v0.5.2...v0.6.0) (2026-07-01)
+
+
+### 🎉 Features
+
+* add card attachment functionality ([#36](https://github.com/hesedcasa/trello/issues/36)) ([441fbea](https://github.com/hesedcasa/trello/commit/441fbeae17c022d0752e0590c15c17f20f22ceec))
+
 ## [0.5.2](https://github.com/hesedcasa/trello/compare/v0.5.1...v0.5.2) (2026-06-26)
 
 
