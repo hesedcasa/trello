@@ -26,12 +26,14 @@ describe('card:attach', () => {
     CardAttach = await esmock('../../../../src/commands/trello/card/attach.js', {
       '../../../../src/trello/trello-client.js': {
         addCardAttachment: mockAddCardAttachment,
+        addCardComment: async () => ({data: {}, success: true}),
         clearClients: mockClearClients,
       },
       '@hesed/plugin-lib': {
         createProfileManager: mockCreateProfileManager,
         formatAsToon: (d: any) => JSON.stringify(d),
       },
+      'node:fs/promises': {async access() {}},
     })
   })
 
@@ -53,12 +55,14 @@ describe('card:attach', () => {
           captured = args
           return {data: {}, success: true}
         },
+        addCardComment: async () => ({data: {}, success: true}),
         clearClients: mockClearClients,
       },
       '@hesed/plugin-lib': {
         createProfileManager: mockCreateProfileManager,
         formatAsToon: (d: any) => JSON.stringify(d),
       },
+      'node:fs/promises': {async access() {}},
     })
 
     const command = new CardAttach.default(['card123', './report.pdf'], createMockConfig())
@@ -88,6 +92,7 @@ describe('card:attach', () => {
         createProfileManager: mockCreateProfileManager,
         formatAsToon: (d: any) => JSON.stringify(d),
       },
+      'node:fs/promises': {async access() {}},
     })
 
     const command = new CardAttach.default(
@@ -125,6 +130,7 @@ describe('card:attach', () => {
         createProfileManager: mockCreateProfileManager,
         formatAsToon: (d: any) => JSON.stringify(d),
       },
+      'node:fs/promises': {async access() {}},
     })
 
     const command = new CardAttach.default(
@@ -155,6 +161,7 @@ describe('card:attach', () => {
         createProfileManager: mockCreateProfileManager,
         formatAsToon: (d: any) => JSON.stringify(d),
       },
+      'node:fs/promises': {async access() {}},
     })
 
     const command = new CardAttach.default(['card123', './a.pdf', './b.png'], createMockConfig())
@@ -181,12 +188,45 @@ describe('card:attach', () => {
         createProfileManager: mockCreateProfileManager,
         formatAsToon: (d: any) => JSON.stringify(d),
       },
+      'node:fs/promises': {async access() {}},
     })
 
     const command = new CardAttach.default(['card123', './report.pdf', '--comment', 'hi'], createMockConfig())
     const result = await command.run()
 
     expect(commentCalled).to.be.false
+    expect(result.success).to.be.false
+  })
+
+  it('does not upload any file when one path in the batch is unreadable', async () => {
+    let uploadCalled = false
+
+    CardAttach = await esmock('../../../../src/commands/trello/card/attach.js', {
+      '../../../../src/trello/trello-client.js': {
+        async addCardAttachment() {
+          uploadCalled = true
+          return {data: {}, success: true}
+        },
+        addCardComment: async () => ({data: {}, success: true}),
+        clearClients: mockClearClients,
+      },
+      '@hesed/plugin-lib': {
+        createProfileManager: mockCreateProfileManager,
+        formatAsToon: (d: any) => JSON.stringify(d),
+      },
+      'node:fs/promises': {
+        async access(file: string) {
+          if (file === './missing.pdf') {
+            throw new Error('ENOENT: no such file or directory')
+          }
+        },
+      },
+    })
+
+    const command = new CardAttach.default(['card123', './valid.pdf', './missing.pdf'], createMockConfig())
+    const result = await command.run()
+
+    expect(uploadCalled).to.be.false
     expect(result.success).to.be.false
   })
 

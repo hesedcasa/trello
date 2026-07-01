@@ -1,5 +1,6 @@
 import {type ApiResult, createProfileManager, formatAsToon} from '@hesed/plugin-lib'
 import {Args, Flags} from '@oclif/core'
+import {access} from 'node:fs/promises'
 
 import {BaseCommand} from '../../../base-command.js'
 import {type Config} from '../../../trello/trello-api.js'
@@ -41,6 +42,15 @@ export default class CardAttach extends BaseCommand {
 
     // `multiple: true` collects every file path after the card id into an array.
     const files = args.file as unknown as string[]
+
+    // Verify every file is readable before uploading any of them, so a batch with one
+    // missing file doesn't leave the card with a partial set of attachments.
+    try {
+      await Promise.all(files.map((file) => access(file)))
+    } catch (error: unknown) {
+      clearClients()
+      return {error: error instanceof Error ? error.message : String(error), success: false}
+    }
 
     const attachments = await Promise.all(files.map((file) => addCardAttachment(auth, args.cardId, file)))
     const allSucceeded = attachments.every((a) => a.success)
