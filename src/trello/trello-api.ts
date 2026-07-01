@@ -1,4 +1,6 @@
 import {type ApiResult} from '@hesed/plugin-lib'
+import {readFile} from 'node:fs/promises'
+import {basename} from 'node:path'
 import {TrelloClient} from 'trello.js'
 
 export interface Config {
@@ -15,6 +17,21 @@ export class TrelloApi {
   }
 
   // ── Actions (comments) ────────────────────────────────────────────
+
+  async addCardAttachment(cardId: string, filePath: string): Promise<ApiResult> {
+    try {
+      const client = this.getClient()
+      const file = await readFile(filePath)
+      const response = await client.cards.createCardAttachment({
+        file,
+        id: cardId,
+        name: basename(filePath),
+      })
+      return {data: response, success: true}
+    } catch (error: unknown) {
+      return this.handleError(error)
+    }
+  }
 
   async addCardComment(cardId: string, text: string): Promise<ApiResult> {
     try {

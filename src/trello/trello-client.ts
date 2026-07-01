@@ -97,6 +97,11 @@ export async function moveCard(config: Config, cardId: string, idList: string, i
   return trello.moveCard(cardId, idList, idBoard)
 }
 
+export async function addCardAttachment(config: Config, cardId: string, filePath: string): Promise<ApiResult> {
+  const trello = await initTrello(config)
+  return trello.addCardAttachment(cardId, filePath)
+}
+
 export async function searchCards(config: Config, query: string, boardIds?: string): Promise<ApiResult> {
   const trello = await initTrello(config)
   return trello.searchCards(query, boardIds)
