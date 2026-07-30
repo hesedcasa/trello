@@ -3,6 +3,11 @@ import {readFile} from 'node:fs/promises'
 import {basename} from 'node:path'
 import {TrelloClient} from 'trello.js'
 
+import {buildProxyRequestConfig} from '../proxy.js'
+
+/** trello.js pins its axios baseURL to this host, so proxy resolution is keyed off it. */
+const TRELLO_API_HOST = 'https://api.trello.com'
+
 export interface Config {
   apiKey: string
   apiToken: string
@@ -291,7 +296,10 @@ export class TrelloApi {
       return this.client
     }
 
+    const baseRequestConfig = buildProxyRequestConfig(TRELLO_API_HOST)
+
     this.client = new TrelloClient({
+      ...(baseRequestConfig && {baseRequestConfig}),
       key: this.config.apiKey,
       token: this.config.apiToken,
     })

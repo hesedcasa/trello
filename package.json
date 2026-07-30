@@ -13,6 +13,8 @@
     "@oclif/core": "^4",
     "@toon-format/toon": "^2.1.0",
     "fs-extra": "^11.3.3",
+    "https-proxy-agent": "^7.0.6",
+    "proxy-from-env": "^1.1.0",
     "trello.js": "^1.2.8"
   },
   "devDependencies": {
@@ -23,6 +25,7 @@
     "@types/fs-extra": "^11.0.4",
     "@types/mocha": "^10",
     "@types/node": "^25",
+    "@types/proxy-from-env": "^1.0.4",
     "@types/sinon": "^22.0.0",
     "c8": "^11.0.0",
     "chai": "^6",
