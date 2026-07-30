@@ -204,4 +204,102 @@ describe('TrelloApi', () => {
       expect(trelloApi.testConnection).to.be.a('function')
     })
   })
+
+  // Port 1 is reserved and never listening, so these exercise the error path against a
+  // proxy that cannot be reached without depending on outbound network access.
+  describe('proxy failure reporting', () => {
+    // npm_config_https_proxy and npm_config_proxy outrank HTTPS_PROXY in proxy-from-env's
+    // precedence, and npm sets them while running the suite, so both must be cleared too.
+    const proxyEnvKeys = [
+      'ALL_PROXY',
+      'HTTPS_PROXY',
+      'HTTP_PROXY',
+      'NO_PROXY',
+      'npm_config_no_proxy',
+      'npm_config_proxy',
+      'npm_config_http_proxy',
+      'npm_config_https_proxy',
+    ]
+    const originalEnv = {...process.env}
+
+    beforeEach(() => {
+      for (const key of proxyEnvKeys) {
+        delete process.env[key]
+        delete process.env[key.toLowerCase()]
+      }
+    })
+
+    afterEach(() => {
+      for (const key of Object.keys(process.env)) {
+        if (!(key in originalEnv)) delete process.env[key]
+      }
+
+      Object.assign(process.env, originalEnv)
+    })
+
+    it('names the proxy and its source when the proxy cannot be reached', async () => {
+      process.env.HTTPS_PROXY = 'http://127.0.0.1:1'
+
+      const result = new TrelloApi(mockConfig)
+      const {error, success} = await result.testConnection()
+      result.clearClients()
+
+      expect(success).to.equal(false)
+      expect(error).to.contain('proxy http://127.0.0.1:1')
+      expect(error).to.contain('from HTTPS_PROXY')
+      expect(error).to.contain('ECONNREFUSED')
+    })
+
+    it('explains the assumed port when the proxy URL omits one', async () => {
+      process.env.HTTPS_PROXY = 'http://127.0.0.1'
+
+      const result = new TrelloApi(mockConfig)
+      const {error} = await result.testConnection()
+      result.clearClients()
+
+      expect(error).to.contain('port 80 was assumed')
+    })
+
+    it('does not mention a proxy when none is configured', async () => {
+      const api = new TrelloApi(mockConfig)
+      api.getClient()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const annotated = (api as any).annotateProxyFailure('connect ECONNREFUSED 1.2.3.4:443', new Error('boom'))
+      api.clearClients()
+
+      expect(annotated).to.equal('connect ECONNREFUSED 1.2.3.4:443')
+    })
+
+    it('flags a status a proxy commonly answers CONNECT with as possibly the proxy', async () => {
+      process.env.HTTPS_PROXY = 'http://127.0.0.1:1'
+
+      const api = new TrelloApi(mockConfig)
+      api.getClient()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const annotated = (api as any).annotateProxyFailure('Request failed with status code 403', {
+        response: {status: 403},
+      })
+      api.clearClients()
+
+      expect(annotated).to.contain('refused the CONNECT tunnel')
+      expect(annotated).to.contain('proxy http://127.0.0.1:1')
+    })
+
+    it('leaves a genuine Trello status untouched', async () => {
+      process.env.HTTPS_PROXY = 'http://127.0.0.1:1'
+
+      const api = new TrelloApi(mockConfig)
+      api.getClient()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const annotated = (api as any).annotateProxyFailure('Request failed with status code 401', {
+        response: {status: 401},
+      })
+      api.clearClients()
+
+      expect(annotated).to.equal('Request failed with status code 401')
+    })
+  })
 })

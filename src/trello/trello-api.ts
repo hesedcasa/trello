@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises'
 import {basename} from 'node:path'
 import {TrelloClient} from 'trello.js'
 
-import {buildProxyRequestConfig} from '../proxy.js'
+import {buildProxyRequestConfig, type ResolvedProxy, resolveProxy} from '../proxy.js'
 
 /** trello.js pins its axios baseURL to this host, so proxy resolution is keyed off it. */
 const TRELLO_API_HOST = 'https://api.trello.com'
@@ -13,9 +13,17 @@ export interface Config {
   apiToken: string
 }
 
+/** Transport-level failures, which name the proxy's own host:port rather than Trello's. */
+const CONNECT_FAILURE_CODES =
+  /ECONNREFUSED|ECONNRESET|ETIMEDOUT|EHOSTUNREACH|ENETUNREACH|ENOTFOUND|EPROTO|ERR_TLS|certificate|socket disconnected|tunneling socket|socket hang up/i
+
+/** Statuses a proxy commonly answers CONNECT with, replayed onto the request by https-proxy-agent. */
+const PROXY_REJECTION_STATUSES = new Set([400, 403, 407, 502, 503])
+
 export class TrelloApi {
   private client?: TrelloClient
   private config: Config
+  private proxy?: ResolvedProxy
 
   constructor(config: Config) {
     this.config = config
@@ -72,6 +80,7 @@ export class TrelloApi {
 
   clearClients(): void {
     this.client = undefined
+    this.proxy = undefined
   }
 
   async createBoard(name: string, desc?: string): Promise<ApiResult> {
@@ -297,6 +306,7 @@ export class TrelloApi {
     }
 
     const baseRequestConfig = buildProxyRequestConfig(TRELLO_API_HOST)
+    this.proxy = resolveProxy(TRELLO_API_HOST)
 
     this.client = new TrelloClient({
       ...(baseRequestConfig && {baseRequestConfig}),
@@ -431,8 +441,41 @@ export class TrelloApi {
 
   // ── Private helpers ───────────────────────────────────────────────
 
+  /**
+   * Attributes a failure to the proxy when one is in use, because neither shape of proxy
+   * failure looks like one:
+   *
+   * - An unreachable proxy reports the *proxy's* host and port, so a proxy URL without an
+   *   explicit port fails as `connect ECONNREFUSED <host>:443` — indistinguishable from
+   *   Trello itself being unreachable on 443.
+   * - https-proxy-agent replays a non-200 CONNECT response onto a fake socket, so a proxy
+   *   that refuses the tunnel arrives as an ordinary HTTP status from api.trello.com, i.e.
+   *   a policy denial reads as Trello rejecting the credentials.
+   */
+  private annotateProxyFailure(message: string, error: unknown): string {
+    const {proxy} = this
+    if (!proxy) return message
+
+    const via = `proxy ${proxy.url} (from ${proxy.source})`
+    const status = (error as {response?: {status?: number}})?.response?.status
+
+    if (CONNECT_FAILURE_CODES.test(message)) {
+      const portHint = proxy.portWasImplicit
+        ? ` The proxy URL specifies no port, so port ${proxy.port} was assumed — set the port explicitly if that is wrong.`
+        : ''
+      return `Could not reach Trello through ${via}: ${message}.${portHint}`
+    }
+
+    if (status !== undefined && PROXY_REJECTION_STATUSES.has(status)) {
+      return `${message} — the request went through ${via}, which may have refused the CONNECT tunnel rather than Trello rejecting the request.`
+    }
+
+    return message
+  }
+
   private handleError(error: unknown): ApiResult {
     const errorMessage = error instanceof Error ? error.message : String(error)
-    return {error: errorMessage, success: false}
+    return {error: this.annotateProxyFailure(errorMessage, error), success: false}
   }
+
 }
