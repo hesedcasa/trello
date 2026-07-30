@@ -287,6 +287,23 @@ describe('TrelloApi', () => {
       expect(annotated).to.contain('proxy http://127.0.0.1:1')
     })
 
+    it('points a TLS trust failure at the proxy CA rather than the request', async () => {
+      process.env.HTTPS_PROXY = 'http://127.0.0.1:14322'
+
+      const api = new TrelloApi(mockConfig)
+      api.getClient()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const annotated = (api as any).annotateProxyFailure(
+        'self-signed certificate in certificate chain',
+        new Error('self-signed certificate in certificate chain'),
+      )
+      api.clearClients()
+
+      expect(annotated).to.contain('TLS verification failed through proxy http://127.0.0.1:14322')
+      expect(annotated).to.contain('NODE_EXTRA_CA_CERTS')
+    })
+
     it('leaves a genuine Trello status untouched', async () => {
       process.env.HTTPS_PROXY = 'http://127.0.0.1:1'
 

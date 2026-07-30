@@ -13,6 +13,12 @@ export interface Config {
   apiToken: string
 }
 
+/**
+ * TLS trust failures, which a MITM proxy causes whenever its CA is not trusted by the
+ * Node process rather than anything being wrong with the request.
+ */
+const CERTIFICATE_FAILURE = /certificate|ERR_TLS|self-signed|unable to (verify|get local issuer)/i
+
 /** Transport-level failures, which name the proxy's own host:port rather than Trello's. */
 const CONNECT_FAILURE_CODES =
   /ECONNREFUSED|ECONNRESET|ETIMEDOUT|EHOSTUNREACH|ENETUNREACH|ENOTFOUND|EPROTO|ERR_TLS|certificate|socket disconnected|tunneling socket|socket hang up/i
@@ -458,6 +464,10 @@ export class TrelloApi {
 
     const via = `proxy ${proxy.url} (from ${proxy.source})`
     const status = (error as {response?: {status?: number}})?.response?.status
+
+    if (CERTIFICATE_FAILURE.test(message)) {
+      return `TLS verification failed through ${via}: ${message}. An intercepting proxy presents its own certificate, so its CA must be trusted — point NODE_EXTRA_CA_CERTS at the proxy's CA bundle.`
+    }
 
     if (CONNECT_FAILURE_CODES.test(message)) {
       const portHint = proxy.portWasImplicit
