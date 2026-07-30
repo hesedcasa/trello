@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/hesedcasa/trello/compare/v0.6.0...v0.7.0) (2026-07-30)
+
+
+### 🎉 Features
+
+* add HTTP/HTTPS proxy support for Trello API client ([#47](https://github.com/hesedcasa/trello/issues/47)) ([2f5fd45](https://github.com/hesedcasa/trello/commit/2f5fd45dce67ed8ebdbbf56459ce9c349930666f))
+
 ## [0.6.0](https://github.com/hesedcasa/trello/compare/v0.5.2...v0.6.0) (2026-07-01)
 
 
