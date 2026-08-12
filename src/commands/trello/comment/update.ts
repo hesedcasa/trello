@@ -6,12 +6,13 @@ import {type Config} from '../../../trello/trello-api.js'
 import {clearClients, updateCardComment} from '../../../trello/trello-client.js'
 
 export default class CommentUpdate extends BaseCommand {
-  /* eslint-disable perfectionist/sort-objects */
+  /* eslint-disable perfectionist/sort-objects -- positional args must stay in CLI order */
   static override args = {
     cardId: Args.string({description: 'Card ID', required: true}),
     actionId: Args.string({description: 'Comment action ID', required: true}),
     text: Args.string({description: 'Updated comment text', required: true}),
   }
+
   /* eslint-enable perfectionist/sort-objects */
   static override description = 'Update a comment on a card'
   static override examples = [
@@ -20,6 +21,7 @@ export default class CommentUpdate extends BaseCommand {
     '<%= config.bin %> <%= command.id %> cardId123 actionId456 "- Item 1\n- Item 2\n- Item 3"',
     '<%= config.bin %> <%= command.id %> cardId123 actionId456 "Check [this](https://example.com) link"',
   ]
+
   static override flags = {
     profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
     toon: Flags.boolean({description: 'Format output as toon', required: false}),

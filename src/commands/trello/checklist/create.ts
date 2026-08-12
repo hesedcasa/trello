@@ -10,6 +10,7 @@ export default class ChecklistCreate extends BaseCommand {
     cardId: Args.string({description: 'Card ID', required: true}),
     name: Args.string({description: 'Checklist name', required: true}),
   }
+
   static override description = 'Create a new checklist on a card'
   static override examples = ['<%= config.bin %> <%= command.id %> cardId123 "My Checklist"']
   static override flags = {

@@ -12,7 +12,7 @@ async function initTrello(config: Config): Promise<TrelloApi> {
     return trelloApi
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error)
-    throw new Error(`Failed to initialize Trello client: ${errorMessage}`)
+    throw new Error(`Failed to initialize Trello client: ${errorMessage}`, {cause: error})
   }
 }
 
@@ -221,8 +221,10 @@ export async function testConnection(config: Config): Promise<ApiResult> {
 // ── Cleanup ─────────────────────────────────────────────────────────
 
 export function clearClients(): void {
-  if (trelloApi) {
-    trelloApi.clearClients()
-    trelloApi = null
+  if (!trelloApi) {
+    return
   }
+
+  trelloApi.clearClients()
+  trelloApi = null
 }

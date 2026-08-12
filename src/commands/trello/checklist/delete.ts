@@ -9,6 +9,7 @@ export default class ChecklistDelete extends BaseCommand {
   static override args = {
     checklistId: Args.string({description: 'Checklist ID', required: true}),
   }
+
   static override description = 'Delete a checklist'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d']
   static override flags = {

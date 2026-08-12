@@ -6,7 +6,7 @@ import {type Config} from '../../../trello/trello-api.js'
 import {clearClients, createLabel} from '../../../trello/trello-client.js'
 
 export default class LabelCreate extends BaseCommand {
-  /* eslint-disable perfectionist/sort-objects */
+  /* eslint-disable perfectionist/sort-objects -- positional args must stay in CLI order */
   static override args = {
     boardId: Args.string({description: 'Board ID', required: true}),
     name: Args.string({description: 'Label name', required: true}),
@@ -16,6 +16,7 @@ export default class LabelCreate extends BaseCommand {
       required: true,
     }),
   }
+
   /* eslint-enable perfectionist/sort-objects */
   static override description = 'Create a new label on a board'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d "Bug" red']

@@ -10,6 +10,7 @@ export default class ChecklistAddItem extends BaseCommand {
     checklistId: Args.string({description: 'Checklist ID', required: true}),
     name: Args.string({description: 'Check item name', required: true}),
   }
+
   static override description = 'Add an item to a checklist'
   static override examples = ['<%= config.bin %> <%= command.id %> checklistId123 "Buy groceries"']
   static override flags = {

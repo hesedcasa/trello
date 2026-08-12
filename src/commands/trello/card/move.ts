@@ -10,11 +10,13 @@ export default class CardMove extends BaseCommand {
     cardId: Args.string({description: 'Card ID', required: true}),
     listId: Args.string({description: 'Target list ID', required: true}),
   }
+
   static override description = 'Move a card to a different list'
   static override examples = [
     '<%= config.bin %> <%= command.id %> cardId123 listId456',
     '<%= config.bin %> <%= command.id %> cardId123 listId456 --board boardId789',
   ]
+
   static override flags = {
     board: Flags.string({description: 'Target board ID (for cross-board moves)', required: false}),
     profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),

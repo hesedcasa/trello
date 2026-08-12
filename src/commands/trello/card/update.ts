@@ -9,10 +9,12 @@ export default class CardUpdate extends BaseCommand {
   static override args = {
     cardId: Args.string({description: 'Card ID', required: true}),
   }
+
   static override description = 'Update an existing card'
   static override examples = [
     '<%= config.bin %> <%= command.id %> 5a1b2c3d --fields name="Updated name" desc="New description"',
   ]
+
   static override flags = {
     fields: Flags.string({description: 'Card fields to update in key=value format', multiple: true, required: true}),
     profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),

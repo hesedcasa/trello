@@ -9,11 +9,13 @@ export default class CardSearch extends BaseCommand {
   static override args = {
     query: Args.string({description: 'Search query', required: true}),
   }
+
   static override description = 'Search for cards'
   static override examples = [
     '<%= config.bin %> <%= command.id %> "bug fix"',
     '<%= config.bin %> <%= command.id %> "bug fix" --boards boardId1,boardId2',
   ]
+
   static override flags = {
     boards: Flags.string({description: 'Comma-separated board IDs to search within', required: false}),
     profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),

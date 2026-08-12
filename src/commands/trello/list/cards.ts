@@ -9,6 +9,7 @@ export default class ListCards extends BaseCommand {
   static override args = {
     listId: Args.string({description: 'List ID', required: true}),
   }
+
   static override description = 'Get all cards in a list'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d']
   static override flags = {
