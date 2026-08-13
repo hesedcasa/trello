@@ -9,6 +9,7 @@ export default class ListGet extends BaseCommand {
   static override args = {
     listId: Args.string({description: 'List ID', required: true}),
   }
+
   static override description = 'Get details of a specific list'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d']
   static override flags = {

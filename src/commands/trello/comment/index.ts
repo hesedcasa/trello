@@ -10,6 +10,7 @@ export default class CommentAdd extends BaseCommand {
     cardId: Args.string({description: 'Card ID', required: true}),
     text: Args.string({description: 'Comment text', required: true}),
   }
+
   static override description = 'Add a comment to a card'
   static override examples = [
     '<%= config.bin %> <%= command.id %> cardId123 "This is a comment"',
@@ -17,6 +18,7 @@ export default class CommentAdd extends BaseCommand {
     '<%= config.bin %> <%= command.id %> cardId123 "- Item 1\n- Item 2\n- Item 3"',
     '<%= config.bin %> <%= command.id %> cardId123 "Check [this](https://example.com) link"',
   ]
+
   static override flags = {
     profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
     toon: Flags.boolean({description: 'Format output as toon', required: false}),

@@ -10,11 +10,13 @@ export default class ListCreate extends BaseCommand {
     boardId: Args.string({description: 'Board ID', required: true}),
     name: Args.string({description: 'List name', required: true}),
   }
+
   static override description = 'Create a new list on a board'
   static override examples = [
     '<%= config.bin %> <%= command.id %> 5a1b2c3d "To Do"',
     '<%= config.bin %> <%= command.id %> 5a1b2c3d "Done" --pos bottom',
   ]
+
   static override flags = {
     pos: Flags.string({description: 'Position of the list (top, bottom)', options: ['top', 'bottom'], required: false}),
     profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),

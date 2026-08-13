@@ -1,6 +1,6 @@
 import {type ApiResult} from '@hesed/plugin-lib'
 import {readFile} from 'node:fs/promises'
-import {basename} from 'node:path'
+import path from 'node:path'
 import {TrelloClient} from 'trello.js'
 
 import {buildProxyRequestConfig} from '../proxy.js'
@@ -8,14 +8,14 @@ import {buildProxyRequestConfig} from '../proxy.js'
 /** trello.js pins its axios baseURL to this host, so proxy resolution is keyed off it. */
 const TRELLO_API_HOST = 'https://api.trello.com'
 
-export interface Config {
+export type Config = {
   apiKey: string
   apiToken: string
 }
 
 export class TrelloApi {
   private client?: TrelloClient
-  private config: Config
+  private readonly config: Config
 
   constructor(config: Config) {
     this.config = config
@@ -30,7 +30,7 @@ export class TrelloApi {
       const response = await client.cards.createCardAttachment({
         file,
         id: cardId,
-        name: basename(filePath),
+        name: path.basename(filePath),
       })
       return {data: response, success: true}
     } catch (error: unknown) {
@@ -357,7 +357,7 @@ export class TrelloApi {
       const me = await client.members.getMember({id: 'me'})
       const response = await client.members.getMemberBoards({
         fields: ['name', 'desc', 'url', 'shortLink', 'dateLastActivity'],
-        filter: filter as 'all' | 'closed' | 'members' | 'open' | 'organization' | 'public' | 'starred',
+        filter,
         id: me.id ?? 'me',
       })
       return {data: response, success: true}

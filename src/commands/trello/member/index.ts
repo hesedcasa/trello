@@ -9,12 +9,14 @@ export default class MemberGet extends BaseCommand {
   static override args = {
     memberId: Args.string({default: 'me', description: 'Member ID or username (defaults to "me")', required: false}),
   }
+
   static override description = 'Get member details'
   static override examples = [
     '<%= config.bin %> <%= command.id %>',
     '<%= config.bin %> <%= command.id %> me',
     '<%= config.bin %> <%= command.id %> johndoe',
   ]
+
   static override flags = {
     profile: Flags.string({char: 'p', description: 'Authentication profile name', required: false}),
     toon: Flags.boolean({description: 'Format output as toon', required: false}),

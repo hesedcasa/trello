@@ -9,6 +9,7 @@ export default class LabelList extends BaseCommand {
   static override args = {
     boardId: Args.string({description: 'Board ID', required: true}),
   }
+
   static override description = 'List all labels on a board'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d']
   static override flags = {

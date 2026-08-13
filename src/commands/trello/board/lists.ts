@@ -9,6 +9,7 @@ export default class BoardLists extends BaseCommand {
   static override args = {
     boardId: Args.string({description: 'Board ID', required: true}),
   }
+
   static override description = 'Get all lists on a board'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d4e5f6g7h8i9j']
   static override flags = {

@@ -9,6 +9,7 @@ export default class LabelDelete extends BaseCommand {
   static override args = {
     labelId: Args.string({description: 'Label ID', required: true}),
   }
+
   static override description = 'Delete a label'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d']
   static override flags = {

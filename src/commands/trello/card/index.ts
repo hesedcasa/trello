@@ -9,6 +9,7 @@ export default class CardGet extends BaseCommand {
   static override args = {
     cardId: Args.string({description: 'Card ID', required: true}),
   }
+
   static override description = 'Get details of a specific card'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d']
   static override flags = {

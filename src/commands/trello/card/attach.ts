@@ -17,12 +17,14 @@ export default class CardAttach extends BaseCommand {
       required: true,
     }),
   }
+
   static override description = 'Upload one or more file attachments to a card'
   static override examples = [
     '<%= config.bin %> <%= command.id %> 5a1b2c3d ./report.pdf',
     '<%= config.bin %> <%= command.id %> 5a1b2c3d ./one.pdf ./two.png ./three.log',
     '<%= config.bin %> <%= command.id %> 5a1b2c3d ./report.pdf --comment "Latest report attached"',
   ]
+
   static override flags = {
     comment: Flags.string({
       description: 'Post a single comment on the card linking the uploaded attachment(s)',
@@ -46,17 +48,17 @@ export default class CardAttach extends BaseCommand {
     // Verify every file is readable before uploading any of them, so a batch with one
     // missing file doesn't leave the card with a partial set of attachments.
     try {
-      await Promise.all(files.map((file) => access(file)))
+      await Promise.all(files.map(async (file) => access(file)))
     } catch (error: unknown) {
       clearClients()
       return {error: error instanceof Error ? error.message : String(error), success: false}
     }
 
-    const attachments = await Promise.all(files.map((file) => addCardAttachment(auth, args.cardId, file)))
-    const allSucceeded = attachments.every((a) => a.success)
+    const attachments = await Promise.all(files.map(async (file) => addCardAttachment(auth, args.cardId, file)))
+    const isAllSucceeded = attachments.every((a) => a.success)
 
     let result: ApiResult
-    if (flags.comment && allSucceeded) {
+    if (isAllSucceeded && flags.comment) {
       const links = attachments
         .map((a) => a.data as AttachmentData)
         .filter((d): d is {name?: string; url?: string} => Boolean(d?.url))
@@ -68,7 +70,7 @@ export default class CardAttach extends BaseCommand {
       // Preserve the plain single-attachment shape for the common case.
       result = attachments[0]
     } else {
-      result = {data: {attachments: attachments.map((a) => a.data)}, success: allSucceeded}
+      result = {data: {attachments: attachments.map((a) => a.data)}, success: isAllSucceeded}
     }
 
     clearClients()

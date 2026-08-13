@@ -10,11 +10,13 @@ export default class CardCreate extends BaseCommand {
     listId: Args.string({description: 'List ID to add the card to', required: true}),
     name: Args.string({description: 'Card name', required: true}),
   }
+
   static override description = 'Create a new card'
   static override examples = [
     '<%= config.bin %> <%= command.id %> 5a1b2c3d "My new card"',
     '<%= config.bin %> <%= command.id %> 5a1b2c3d "My new card" --desc "Card description" --pos top',
   ]
+
   static override flags = {
     desc: Flags.string({description: 'Card description', required: false}),
     pos: Flags.string({description: 'Position of the card (top, bottom)', options: ['top', 'bottom'], required: false}),

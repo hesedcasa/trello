@@ -9,6 +9,7 @@ export default class ChecklistGet extends BaseCommand {
   static override args = {
     checklistId: Args.string({description: 'Checklist ID', required: true}),
   }
+
   static override description = 'Get details of a specific checklist'
   static override examples = ['<%= config.bin %> <%= command.id %> 5a1b2c3d']
   static override flags = {
