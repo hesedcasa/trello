@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/hesedcasa/trello/compare/v0.7.0...v0.7.1) (2026-08-13)
+
+
+### ♻️ Chores
+
+* upgrade ESLint and fix lint/type errors ([#53](https://github.com/hesedcasa/trello/issues/53)) ([975bdeb](https://github.com/hesedcasa/trello/commit/975bdeb466522c9e9aa2674061bf14c077ed942e))
+
 ## [0.7.0](https://github.com/hesedcasa/trello/compare/v0.6.0...v0.7.0) (2026-07-30)
 
 
