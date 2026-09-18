@@ -189,7 +189,7 @@ export async function seedCard(listId: string, name: string, overrides: Record<s
     throw new Error(`seedCard "${name}" failed: ${status} ${JSON.stringify(body)}`)
   }
 
-  const {id} = (body as {id: string})
+  const {id} = body as {id: string}
   createdCards.add(id)
   return id
 }
@@ -412,9 +412,12 @@ export async function sweepStale(): Promise<number> {
 export async function fetchAttachmentBody(cardId: string, attachmentId: string, name: string): Promise<Buffer> {
   const {apiKey, apiToken} = requireEnv()
 
-  const response = await fetch(`${API_BASE}/cards/${cardId}/attachments/${attachmentId}/download/${encodeURIComponent(name)}`, {
-    headers: {authorization: `OAuth oauth_consumer_key="${apiKey}", oauth_token="${apiToken}"`},
-  })
+  const response = await fetch(
+    `${API_BASE}/cards/${cardId}/attachments/${attachmentId}/download/${encodeURIComponent(name)}`,
+    {
+      headers: {authorization: `OAuth oauth_consumer_key="${apiKey}", oauth_token="${apiToken}"`},
+    },
+  )
   if (!response.ok) {
     throw new Error(`fetchAttachmentBody failed: ${response.status}`)
   }

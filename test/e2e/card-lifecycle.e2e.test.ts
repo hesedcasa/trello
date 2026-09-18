@@ -88,7 +88,10 @@ describe('e2e: card lifecycle', () => {
     expect(added.success).to.be.true
     const commentId = added.data.id
 
-    const comments = await runCliJson<{data: Comment[]; success: boolean}>(['trello', 'card', 'comments', cardId], configDir)
+    const comments = await runCliJson<{data: Comment[]; success: boolean}>(
+      ['trello', 'card', 'comments', cardId],
+      configDir,
+    )
     expect(comments.data.map((comment) => comment.id)).to.include(commentId)
 
     const {code: updateCode} = await runCli(
@@ -147,7 +150,10 @@ describe('e2e: card lifecycle', () => {
     expect(created.success).to.be.true
     const labelId = created.data.id
 
-    const listed = await runCliJson<{data: Array<{id: string}>; success: boolean}>(['trello', 'label', boardId], configDir)
+    const listed = await runCliJson<{data: Array<{id: string}>; success: boolean}>(
+      ['trello', 'label', boardId],
+      configDir,
+    )
     expect(listed.data.map((label) => label.id)).to.include(labelId)
 
     const {code} = await runCli(['trello', 'label', 'delete', labelId], configDir)

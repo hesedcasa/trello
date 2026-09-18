@@ -76,7 +76,10 @@ describe('e2e: attachments', () => {
     )
     expect(uploaded.success).to.be.true
 
-    const comments = await runCliJson<{data: Comment[]; success: boolean}>(['trello', 'card', 'comments', cardId], configDir)
+    const comments = await runCliJson<{data: Comment[]; success: boolean}>(
+      ['trello', 'card', 'comments', cardId],
+      configDir,
+    )
     // The command prepends the flag text to the attachment links it posts, so
     // assert on containment within the joined texts, not array membership.
     expect(comments.data.map((comment) => comment.data.text).join('\n')).to.contain('see attached')

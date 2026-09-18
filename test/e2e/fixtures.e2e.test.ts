@@ -1,6 +1,21 @@
 import {expect} from 'chai'
 
-import {boardClosed, boardEpoch, cardHttpStatus, cleanupRun, deleteCard, findFixtureBoards, isRunBoardName, resetRunState, RUN_BOARD_NAME, RUN_BOARD_PATTERN, RUN_ID, seedBoard, seedCard, sweepStale} from './fixtures.js'
+import {
+  boardClosed,
+  boardEpoch,
+  cardHttpStatus,
+  cleanupRun,
+  deleteCard,
+  findFixtureBoards,
+  isRunBoardName,
+  resetRunState,
+  RUN_BOARD_NAME,
+  RUN_BOARD_PATTERN,
+  RUN_ID,
+  seedBoard,
+  seedCard,
+  sweepStale,
+} from './fixtures.js'
 
 describe('e2e: fixtures', () => {
   after(async () => {
@@ -79,7 +94,7 @@ describe('e2e: fixtures', () => {
   // the mocha process created its board under — an exact-name match would
   // orphan every interrupted run. A different epoch must still match; a
   // different run id, or a non-fixture name, must not.
-  it('admits a run\'s boards to cleanup by run id, at any epoch', () => {
+  it("admits a run's boards to cleanup by run id, at any epoch", () => {
     expect(isRunBoardName(`[e2e-cli] run ${RUN_ID} 1726000000000`, RUN_ID)).to.be.true
     expect(isRunBoardName(`[e2e-cli] run ${RUN_ID} 1`, RUN_ID)).to.be.true
     expect(isRunBoardName(RUN_BOARD_NAME, RUN_ID)).to.be.true
