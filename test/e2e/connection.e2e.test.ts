@@ -57,10 +57,15 @@ describe('e2e: connection', () => {
     expect(code).to.equal(2)
   })
 
+  // Per the repo's live-test rules: exit code plus an error substring, not
+  // the full payload — the to_errorJson shape is {error} only (no success
+  // field on this.error paths), so there is nothing else stable to pin.
   it('errors on an unknown profile rather than falling back to the default', async () => {
     const {code, stdout} = await runCli(['trello', 'board', 'list', '--profile', 'nosuch'], configDir)
     expect(code).to.equal(1)
-    expect(JSON.parse(stdout)).to.deep.equal({error: 'Missing authentication config.'})
+
+    const payload = JSON.parse(stdout) as Failure
+    expect(payload.error).to.contain('Missing authentication config')
   })
 
   // Pinned as observed, and unlike the jira suite: the trello data commands
