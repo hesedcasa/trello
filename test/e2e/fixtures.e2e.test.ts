@@ -1,6 +1,6 @@
 import {expect} from 'chai'
 
-import {boardClosed, boardEpoch, cardHttpStatus, cleanupRun, deleteCard, findFixtureBoards, resetRunState, RUN_BOARD_NAME, RUN_BOARD_PATTERN, RUN_ID, seedBoard, seedCard, sweepStale} from './fixtures.js'
+import {boardClosed, boardEpoch, cardHttpStatus, cleanupRun, deleteCard, findFixtureBoards, isRunBoardName, resetRunState, RUN_BOARD_NAME, RUN_BOARD_PATTERN, RUN_ID, seedBoard, seedCard, sweepStale} from './fixtures.js'
 
 describe('e2e: fixtures', () => {
   after(async () => {
@@ -72,6 +72,23 @@ describe('e2e: fixtures', () => {
     expect(RUN_BOARD_PATTERN.test('[e2e-cli] run ab12 notanumber')).to.be.false
     expect(RUN_BOARD_PATTERN.test('[e2e-cli] run ab12 1726000000000 extra')).to.be.false
     expect(RUN_BOARD_PATTERN.test('my [e2e-cli] run ab12 1726000000000')).to.be.false
+  })
+
+  // Cleanup addresses a run's boards by run id, at any epoch: the epoch is
+  // per process, so the sweep process can never reconstruct the exact name
+  // the mocha process created its board under — an exact-name match would
+  // orphan every interrupted run. A different epoch must still match; a
+  // different run id, or a non-fixture name, must not.
+  it('admits a run\'s boards to cleanup by run id, at any epoch', () => {
+    expect(isRunBoardName(`[e2e-cli] run ${RUN_ID} 1726000000000`, RUN_ID)).to.be.true
+    expect(isRunBoardName(`[e2e-cli] run ${RUN_ID} 1`, RUN_ID)).to.be.true
+    expect(isRunBoardName(RUN_BOARD_NAME, RUN_ID)).to.be.true
+    expect(isRunBoardName('[e2e-cli] run otherrun 1726000000000', RUN_ID)).to.be.false
+    expect(isRunBoardName(`[e2e-cli] run ${RUN_ID}`, RUN_ID)).to.be.false
+    expect(isRunBoardName('[e2e-cli] project 1', RUN_ID)).to.be.false
+    // A run id with regex metacharacters matches only itself.
+    expect(isRunBoardName('[e2e-cli] run .*+ 123', '.*+')).to.be.true
+    expect(isRunBoardName('[e2e-cli] run x 123', '.*+')).to.be.false
   })
 
   it('seeds a fresh board after the previous one was cleaned up', async () => {

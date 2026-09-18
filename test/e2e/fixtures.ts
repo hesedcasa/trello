@@ -8,9 +8,11 @@ import {requireEnv} from './helpers.js'
  * fixtures.
  *
  * E2E_RUN_ID overrides it so a *separate* process can address this run's
- * fixtures by board name — `scripts/e2e.sh` and the CI workflow both set it,
+ * fixtures by run id — `scripts/e2e.sh` and the CI workflow both set it,
  * which is what lets their post-run sweep reclaim fixtures a killed mocha
- * never got to clean up.
+ * never got to clean up. The run id, not the full board name, is the
+ * cross-process handle: the epoch in the name is per process (see
+ * isRunBoardName).
  */
 export const RUN_ID = process.env.E2E_RUN_ID || randomBytes(4).toString('hex')
 /** When this process started — embedded in the board name, see RUN_BOARD_NAME. */
@@ -57,6 +59,28 @@ type TrelloResponse = {body: unknown; status: number}
 export function boardEpoch(name: string): number | undefined {
   const epoch = Number(name.split(' ').at(-1))
   return Number.isFinite(epoch) && epoch > 0 ? epoch : undefined
+}
+
+/**
+ * Whether a board name is a run board owned by `runId` — the complete naming
+ * contract (RUN_BOARD_PATTERN) plus an exact run id, at any epoch.
+ *
+ * Cleanup matches on the run id, not on the full name, because RUN_EPOCH is
+ * per process: the sweep process can never reconstruct the name the mocha
+ * process created its board under, but both share the run id through
+ * E2E_RUN_ID. The pattern still guards admission, so a board that merely
+ * starts with the prefix is never admitted. The id is compared as a plain
+ * string — structural, not regex-escaped — so a run id containing regex
+ * metacharacters matches only itself.
+ *
+ * @param name The board name.
+ * @param runId The run id to match.
+ * @returns True when the name is that run's board.
+ */
+export function isRunBoardName(name: string, runId: string): boolean {
+  // The pattern pins the name to exactly `[e2e-cli] run <id> <epoch>`, so the
+  // third space-separated token is the run id.
+  return RUN_BOARD_PATTERN.test(name) && name.split(' ', 3)[2] === runId
 }
 
 /**
@@ -301,22 +325,26 @@ export async function boardClosed(boardId: string): Promise<boolean> {
 }
 
 /**
- * Deletes every fixture created by this process, plus any open board named
- * exactly after this run.
+ * Deletes every fixture created by this process, plus every open board owned
+ * by this run id (see isRunBoardName).
  *
  * With E2E_RUN_ID set — the sweep-script and CI case — this process may never
- * have created anything, and the exact-name lookup is all it has to go on.
- * The board scan itself has no index lag, so nothing created through the CLI
- * (which the tracking set never saw) can be missed.
+ * have created anything, and the run-id lookup is all it has to go on: the
+ * epoch in a board name is per process, so an exact-name match could never
+ * cross the process boundary. The board scan itself has no index lag, so
+ * nothing created through the CLI (which the tracking set never saw) can be
+ * missed.
+ *
+ * @returns How many boards were closed.
  */
-export async function cleanupRun(): Promise<void> {
+export async function cleanupRun(): Promise<number> {
   const boardIds = new Set<string>()
   if (runBoard) {
     boardIds.add(runBoard.boardId)
   }
 
   for (const board of await findFixtureBoards()) {
-    if (board.name === RUN_BOARD_NAME) {
+    if (isRunBoardName(board.name, RUN_ID)) {
       boardIds.add(board.id)
     }
   }
@@ -334,6 +362,7 @@ export async function cleanupRun(): Promise<void> {
   }
 
   resetRunState()
+  return boardIds.size
 }
 
 /**

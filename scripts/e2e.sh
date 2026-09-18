@@ -38,9 +38,10 @@ if [ "${#missing[@]}" -gt 0 ]; then
   exit 1
 fi
 
-# Pins the fixture board name for this invocation so the post-run sweep, which
-# is a separate process from mocha, can reclaim *this* run's board and not only
-# the ones older than an hour.
+# Pins the fixture run id for this invocation so the post-run sweep, which
+# is a separate process from mocha, can address this run's boards by id (the
+# epoch in the board name is per process) and reclaim them — not only the
+# ones older than an hour.
 E2E_RUN_ID="${E2E_RUN_ID:-local-$$}"
 export E2E_RUN_ID
 

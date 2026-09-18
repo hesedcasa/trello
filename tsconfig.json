@@ -12,6 +12,13 @@
   "include": ["./src/**/*"],
   "exclude": ["./test/**/*"],
   "ts-node": {
-    "esm": true
+    "esm": true,
+    // `tsc -b` ignores this section: the build target above stays es2022.
+    // ts-node (mocha, e2e:sweep) needs es2024 to parse the `v`-flag regexes
+    // eslint requires in test/ and scripts/ — at es2022 every load of
+    // test/e2e/fixtures.ts dies on TS1501.
+    "compilerOptions": {
+      "target": "es2024"
+    }
   }
 }
