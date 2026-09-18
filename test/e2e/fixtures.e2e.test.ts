@@ -1,6 +1,6 @@
 import {expect} from 'chai'
 
-import {boardClosed, boardEpoch, cardHttpStatus, cleanupRun, deleteCard, findFixtureBoards, resetRunState, RUN_ID, seedBoard, seedCard, sweepStale} from './fixtures.js'
+import {boardClosed, boardEpoch, cardHttpStatus, cleanupRun, deleteCard, findFixtureBoards, resetRunState, RUN_BOARD_NAME, RUN_BOARD_PATTERN, RUN_ID, seedBoard, seedCard, sweepStale} from './fixtures.js'
 
 describe('e2e: fixtures', () => {
   after(async () => {
@@ -59,6 +59,19 @@ describe('e2e: fixtures', () => {
     expect(boardEpoch('[e2e-cli] run ab12 notanumber')).to.be.undefined
     expect(boardEpoch('[e2e-cli] run ab12 0')).to.be.undefined
     expect(boardEpoch('[e2e-cli] run ab12 -5')).to.be.undefined
+  })
+
+  // The sweep's blast-radius boundary: a board must match the *complete*
+  // naming contract, so a user board that merely starts with the prefix —
+  // "[e2e-cli] project 1", the motivating case — is never admitted.
+  it('admits only full run-board names to destructive cleanup', () => {
+    expect(RUN_BOARD_PATTERN.test(`[e2e-cli] run ${RUN_ID} 1726000000000`)).to.be.true
+    expect(RUN_BOARD_PATTERN.test(RUN_BOARD_NAME)).to.be.true
+    expect(RUN_BOARD_PATTERN.test('[e2e-cli] project 1')).to.be.false
+    expect(RUN_BOARD_PATTERN.test('[e2e-cli] run ab12')).to.be.false
+    expect(RUN_BOARD_PATTERN.test('[e2e-cli] run ab12 notanumber')).to.be.false
+    expect(RUN_BOARD_PATTERN.test('[e2e-cli] run ab12 1726000000000 extra')).to.be.false
+    expect(RUN_BOARD_PATTERN.test('my [e2e-cli] run ab12 1726000000000')).to.be.false
   })
 
   it('seeds a fresh board after the previous one was cleaned up', async () => {

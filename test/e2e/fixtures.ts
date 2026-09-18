@@ -29,6 +29,14 @@ const RUN_EPOCH = Date.now()
  */
 export const BOARD_PREFIX = '[e2e-cli]'
 export const RUN_BOARD_NAME = `${BOARD_PREFIX} run ${RUN_ID} ${RUN_EPOCH}`
+/**
+ * The complete naming contract a board must satisfy before any destructive
+ * lookup will admit it: a literal `run` separator, a run id, and a trailing
+ * epoch. A bare prefix is not enough — a board that merely starts with
+ * `[e2e-cli]` (say, a user's own `[e2e-cli] project 1`) must never be
+ * mistaken for a fixture the sweep may delete cards from and close.
+ */
+export const RUN_BOARD_PATTERN = /^\[e2e-cli\] run \S+ \d+$/v
 
 const API_BASE = 'https://api.trello.com/1'
 
@@ -247,12 +255,14 @@ export async function closeBoard(boardId: string): Promise<void> {
 }
 
 /**
- * The open boards this account holds whose name carries the e2e prefix.
+ * The open boards this account holds whose name matches the full run-board
+ * naming contract (RUN_BOARD_PATTERN).
  *
- * This is the *only* destructive lookup, and it is prefix-scoped here —
+ * This is the *only* destructive lookup, and it is name-scoped here —
  * structurally, once — the way the jira suite scopes its queries to one
  * project: `cleanupRun` and `sweepStale` are driven by ambient environment
- * variables with no other guard.
+ * variables with no other guard. The full-pattern match, not a bare prefix,
+ * is the blast-radius boundary.
  *
  * Exported so the fixtures self-test can assert a seeded board is findable.
  *
@@ -269,7 +279,7 @@ export async function findFixtureBoards(): Promise<FixtureBoard[]> {
 
   return (Array.isArray(body) ? body : [])
     .map((board) => board as FixtureBoard)
-    .filter((board) => board.name.startsWith(BOARD_PREFIX))
+    .filter((board) => RUN_BOARD_PATTERN.test(board.name))
 }
 
 /**

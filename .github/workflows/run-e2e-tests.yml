@@ -2,9 +2,11 @@ name: Run end-to-end tests
 
 permissions: read-all
 
-# Nightly and on demand only. These tests create fixtures in one live Trello
-# account, so running them per pull request would let concurrent runs collide,
-# and fork PRs cannot read the secrets they need.
+# Nightly, plus on demand from the default branch only. These tests create
+# fixtures in one live Trello account, so running them per pull request would
+# let concurrent runs collide, and fork PRs cannot read the secrets they need.
+# The default-branch gate also keeps a manual dispatch of an untrusted ref
+# from running repository code with the account credentials.
 on:
   schedule:
     - cron: '23 3 * * *'
@@ -19,9 +21,12 @@ jobs:
     name: End-to-end tests against the Trello API
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: github.event_name == 'schedule' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        # Pinned to a full SHA: these actions run before repository code gets
+        # the credentials, so a moved mutable tag could swap what executes.
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 2
           # Nothing here pushes, and the default would leave GITHUB_TOKEN in
@@ -29,7 +34,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           cache: npm
           node-version-file: '.nvmrc'
@@ -37,14 +42,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # The steps below are what `npm run test:e2e` does locally, split out so
-      # the sweep still runs when a test fails.
       - name: Build the CLI
         run: npm run build
 
-      # The account credentials are scoped to the two steps that actually talk
-      # to Trello, so nothing before them — actions, `npm ci` lifecycle
-      # scripts, the build — ever has them in its environment.
+      # The account credentials are scoped to the step that actually talks to
+      # Trello, so nothing before it — actions, `npm ci` lifecycle scripts,
+      # the build — ever has them in its environment.
       - name: Run end-to-end tests
         run: npm run e2e:mocha
         env:
@@ -52,12 +55,37 @@ jobs:
           TRELLO_SECRET: ${{ secrets.TRELLO_SECRET }}
           E2E_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
 
-      # `always()`, so a killed mocha run (the job timeout above skips its
-      # `after` hooks) still gets its fixtures reclaimed. E2E_RUN_ID is what
-      # makes that possible: it pins this run's board name so the sweep can
-      # close this run's fixtures, not just the ones older than an hour.
+  # A separate job, not a step with `if: always()`: a job cancelled by its
+  # timeout-minutes never starts its remaining steps, so an in-job fallback
+  # sweep would be skipped in exactly the scenario it exists for. A dependent
+  # job with `if: always()` still runs when the test job fails, times out, or
+  # is cancelled — only a skipped run (dispatch from a non-default branch)
+  # has nothing to reclaim. E2E_RUN_ID is derivable in any job of the same
+  # workflow run, which is what lets this sweep close the test job's board.
+  sweep-fixtures:
+    name: Sweep leftover fixtures
+    runs-on: ubuntu-latest
+    needs: run-e2e-tests
+    if: always() && needs.run-e2e-tests.result != 'skipped'
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          cache: npm
+          node-version-file: '.nvmrc'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Closes this run's board (E2E_RUN_ID) and any fixture boards older
+      # than the stale threshold.
       - name: Sweep leftover fixtures
-        if: always()
         run: npm run e2e:sweep
         env:
           TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}

@@ -1,6 +1,6 @@
 import {expect} from 'chai'
 
-import {seedBoard} from './fixtures.js'
+import {cleanupRun, seedBoard} from './fixtures.js'
 import {createConfigDir, redactSecret, removeConfigDir, runCli, runCliJson} from './helpers.js'
 
 type Failure = {error: string; success: false}
@@ -14,8 +14,16 @@ describe('e2e: connection', () => {
     boardId = (await seedBoard()).boardId
   })
 
+  // cleanupRun too, not just the config dir: this suite seeds the run board,
+  // and a targeted run (`e2e:mocha -- --grep connection`) bypasses the
+  // wrapper's sweep, so without this the board waits an hour for the stale
+  // sweep instead of closing with the suite.
   after(async () => {
-    await removeConfigDir(configDir)
+    try {
+      await cleanupRun()
+    } finally {
+      await removeConfigDir(configDir)
+    }
   })
 
   it('authenticates with the default profile', async () => {
