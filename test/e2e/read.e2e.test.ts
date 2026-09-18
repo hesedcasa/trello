@@ -82,7 +82,10 @@ describe('e2e: read paths', function (this: Mocha.Suite) {
   })
 
   it('lists the cards of a single list', async () => {
-    const payload = await runCliJson<{data: Card[]; success: boolean}>(['trello', 'list', 'cards', lists.todo], configDir)
+    const payload = await runCliJson<{data: Card[]; success: boolean}>(
+      ['trello', 'list', 'cards', lists.todo],
+      configDir,
+    )
     expect(payload.success).to.be.true
     expect(payload.data.map((card) => card.id)).to.include.members([cardOneId, cardTwoId])
   })

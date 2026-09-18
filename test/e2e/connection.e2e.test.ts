@@ -92,7 +92,10 @@ describe('e2e: connection', () => {
   })
 
   it('still lists boards for the default profile', async () => {
-    const payload = await runCliJson<{data: Array<{id: string}>; success: boolean}>(['trello', 'board', 'list'], configDir)
+    const payload = await runCliJson<{data: Array<{id: string}>; success: boolean}>(
+      ['trello', 'board', 'list'],
+      configDir,
+    )
     expect(payload.success).to.be.true
     expect(payload.data.map((board) => board.id)).to.include(boardId)
   })

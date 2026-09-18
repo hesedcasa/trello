@@ -57,10 +57,16 @@ describe('e2e: content fidelity', () => {
     const {cardId} = await createCard(`[e2e ${RUN_ID}] content comment`)
     const text = 'plain comment text'
 
-    const added = await runCliJson<{data: {id: string}; success: boolean}>(['trello', 'comment', cardId, text], configDir)
+    const added = await runCliJson<{data: {id: string}; success: boolean}>(
+      ['trello', 'comment', cardId, text],
+      configDir,
+    )
     expect(added.success).to.be.true
 
-    const comments = await runCliJson<{data: Comment[]; success: boolean}>(['trello', 'card', 'comments', cardId], configDir)
+    const comments = await runCliJson<{data: Comment[]; success: boolean}>(
+      ['trello', 'card', 'comments', cardId],
+      configDir,
+    )
     const comment = comments.data.find((candidate) => candidate.id === added.data.id)
     expect(comment, 'comment missing from the card').to.exist
     expect(comment!.data.text).to.equal(text)
