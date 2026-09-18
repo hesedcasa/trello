@@ -64,3 +64,29 @@ await command.run()
 - `topicSeparator` is a space, so commands are invoked as `trello card create` (not `trello:card:create`)
 - `--json` flag is built into OCLIF (`enableJsonFlag = true`) on commands that return an `ApiResult`
 - `--toon` flag formats output using `@toon-format/toon` (alternative human-readable table format)
+
+## End-to-end tests
+
+`test/e2e/**` runs the built `bin/run.js` as a real subprocess against the live Trello API. It is excluded from `npm test` and needs credentials exported first, because nothing in this repo loads `.env`:
+
+```bash
+set -a; . ./.env; set +a
+npm run test:e2e              # build, run, then sweep
+npm run test:e2e -- --keep    # leave fixtures behind for inspection
+npm run e2e:mocha             # run without rebuilding
+npm run e2e:sweep             # close e2e boards idle for over an hour
+```
+
+`TRELLO_SECRET` in `.env` holds the API **token** (the 64-hex-char value from Trello's authorize flow) despite its name — the OAuth secret on the Power-Up admin page authenticates nothing and gets a 401.
+
+`e2e:sweep` also deletes the _current_ run's fixtures when `E2E_RUN_ID` is set — `scripts/e2e.sh` and the CI workflow both set it, so a mocha killed before its `after` hooks ran (a job timeout, a local Ctrl-C) still gets cleaned up instead of waiting an hour for the stale sweep to reach it.
+
+Five rules specific to this suite:
+
+- **Never pass `--json` to a data command.** JSON is already the default (`BaseCommand.jsonEnabled()`); `--json` is not a declared flag and the command will fail to parse. (`auth test` is the exception — it comes from plugin-lib and prints text by default.)
+- **Fixtures are created with raw `fetch` in `test/e2e/fixtures.ts`, never through the CLI** — they are the oracle the CLI is checked against.
+- **Every fixture lives in the per-run board** named `[e2e-cli] run <id> <epoch>`. Trello has no project to scope queries to, so the name prefix is the only blast-radius guard the sweep has — never widen `findFixtureBoards`. The trailing epoch is the sweep's age signal: Trello reports no usable timestamps for API-created boards, so the name is the only durable one.
+- **Boards cannot be deleted via the API, only closed.** Cleanup deletes the run board's cards and closes the board; closed boards accumulate in the account. That is pinned as a known wart, not a bug to "fix" later.
+- **Assert on exit codes, `success`, and the HTTP status substring** (e.g. `401` in "Request failed with status code 401"), not on full error message text — and note the pinned asymmetry: data commands exit **0** even when the payload is `success: false`; only `this.error` paths (`Missing authentication config.` → 1, failed `auth test` → 2) exit non-zero.
+
+CI runs the suite nightly (`.github/workflows/run-e2e-tests.yml`), not per PR: runs share one live Trello account, and fork PRs cannot read secrets. It stays "blocked" until `TRELLO_API_KEY` and `TRELLO_SECRET` are added in repo Settings → Secrets and variables → Actions.
