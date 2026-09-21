@@ -19,7 +19,7 @@ const MAX_ERROR_CAUSE_DEPTH = 3
  * dispatcher something else installed in between — so no instance can clobber a global
  * it did not displace. Agents installed over a since-cleared agent inherit its target.
  */
-const installedProxyDispatchers: {agent: ProxyAgent; target: Dispatcher}[] = []
+const installedProxyDispatchers: Array<{agent: ProxyAgent; target: Dispatcher}> = []
 
 export type Config = {
   apiKey: string
