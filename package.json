@@ -15,7 +15,7 @@
     "fs-extra": "^11.3.3",
     "https-proxy-agent": "^9.1.0",
     "proxy-from-env": "^2.1.0",
-    "trello.js": "^1.2.8"
+    "trello.js": "^2.2.0"
   },
   "devDependencies": {
     "@eslint/compat": "^2",
