@@ -1,8 +1,8 @@
 import {expect} from 'chai'
 
-import {buildProxyRequestConfig} from '../src/proxy.js'
+import {buildProxyDispatcher} from '../src/proxy.js'
 
-describe('buildProxyRequestConfig', () => {
+describe('buildProxyDispatcher', () => {
   const originalEnv = {...process.env}
 
   // proxy-from-env consults each of these (preferring the lowercase form), so any
@@ -34,35 +34,40 @@ describe('buildProxyRequestConfig', () => {
   })
 
   it('returns undefined when no proxy env var is set', () => {
-    expect(buildProxyRequestConfig('https://api.trello.com')).to.equal(undefined)
+    expect(buildProxyDispatcher('https://api.trello.com')).to.equal(undefined)
   })
 
-  it('returns an httpsAgent and disables axios proxy handling when HTTPS_PROXY is set', () => {
+  it('returns a ProxyAgent when HTTPS_PROXY is set', async () => {
     process.env.HTTPS_PROXY = 'http://user:pass@proxy.example.com:8080'
 
-    const config = buildProxyRequestConfig('https://api.trello.com')
+    const dispatcher = buildProxyDispatcher('https://api.trello.com')
 
-    expect(config).to.not.equal(undefined)
-    expect(config?.proxy).to.equal(false)
-    expect(config?.httpsAgent).to.be.an('object')
+    expect(dispatcher).to.not.equal(undefined)
+    expect(dispatcher?.dispatch).to.be.a('function')
+    await dispatcher?.close()
   })
 
   it('returns undefined when the host is excluded via NO_PROXY', () => {
     process.env.HTTPS_PROXY = 'http://proxy.example.com:8080'
     process.env.NO_PROXY = 'api.trello.com'
 
-    expect(buildProxyRequestConfig('https://api.trello.com')).to.equal(undefined)
+    expect(buildProxyDispatcher('https://api.trello.com')).to.equal(undefined)
   })
 
-  it('returns undefined for an http:// host so axios keeps its own proxy handling', () => {
+  // Unlike the axios workaround this replaced, undici proxies http:// targets too —
+  // ProxyAgent forwards those as an absolute-URI request rather than a CONNECT tunnel.
+  it('returns a ProxyAgent for an http:// host', async () => {
     process.env.HTTP_PROXY = 'http://proxy.example.com:8080'
 
-    expect(buildProxyRequestConfig('http://trello.internal.example.com')).to.equal(undefined)
+    const dispatcher = buildProxyDispatcher('http://trello.internal.example.com')
+
+    expect(dispatcher).to.not.equal(undefined)
+    await dispatcher?.close()
   })
 
   it('returns undefined for a host without a parseable URL', () => {
     process.env.HTTPS_PROXY = 'http://proxy.example.com:8080'
 
-    expect(buildProxyRequestConfig('api.trello.com')).to.equal(undefined)
+    expect(buildProxyDispatcher('api.trello.com')).to.equal(undefined)
   })
 })

@@ -33,7 +33,13 @@ This is an OCLIF v4 CLI (`trello` binary) organized into three layers:
 
 **Client layer** (`src/trello/trello-client.ts`) — Module-level singleton `TrelloApi` instance. Exports plain async functions (e.g. `getCard`, `createCard`) that lazily init the singleton via `initTrello()`. `clearClients()` tears it down between invocations.
 
-**API wrapper** (`src/trello/trello-api.ts`) — `TrelloApi` class wrapping the `trello.js` `TrelloClient`. All methods return `ApiResult` (`{success, data?, error?}`). Errors are caught and returned (never thrown) via `handleError()`.
+**API wrapper** (`src/trello/trello-api.ts`) — `TrelloApi` class wrapping the client `trello.js` v2's `createTrelloClient()` returns. All methods return `ApiResult` (`{success, data?, error?}`). Errors are caught and returned (never thrown) via `handleError()`, which appends the `cause` chain because undici reports every transport failure as a bare `fetch failed`.
+
+Three things about the v2 client are load-bearing:
+
+- **`skipParsing: true`.** v2 validates responses with Zod and strips every key its generated schemas do not name. This CLI prints whatever Trello returns, so parsing is off: no stripped fields, no `Date` coercion, and no `ZodError` when the spec lags the API.
+- **Attachments are uploaded by hand.** v2's `createCardAttachment` sends `file` as a query parameter, so it can only attach a url. `addCardAttachment` posts the multipart body itself against `https://api.trello.com/1/cards/<id>/attachments`, and mirrors v2's `Request failed: <status> <statusText> - <body>` wording so the CLI has one error shape.
+- **The proxy is an undici dispatcher** (`src/proxy.ts`). v2 dropped axios for the global `fetch`, which ignores HTTP(S)\_PROXY, so `getClient()` installs a `ProxyAgent` via `setGlobalDispatcher` when `proxy-from-env` resolves one for `api.trello.com`; `clearClients()` restores the previous dispatcher and closes it so the CLI's keep-alive sockets do not hold the process open.
 
 **Config** (`src/config.ts`) — Reads `trello-config.json` from the OCLIF `configDir` (platform config directory). File holds `{auth: {apiKey, apiToken}}`.
 
@@ -87,6 +93,6 @@ Five rules specific to this suite:
 - **Fixtures are created with raw `fetch` in `test/e2e/fixtures.ts`, never through the CLI** — they are the oracle the CLI is checked against.
 - **Every fixture lives in the per-run board** named `[e2e-cli] run <id> <epoch>`. Trello has no project to scope queries to, so the full-name pattern (`RUN_BOARD_PATTERN` — literal `run`, an id, a trailing epoch) is the only blast-radius guard the sweep has — never widen `findFixtureBoards` past it. The trailing epoch is the sweep's age signal: Trello reports no usable timestamps for API-created boards, so the name is the only durable one.
 - **Boards cannot be deleted via the API, only closed.** Cleanup deletes the run board's cards and closes the board; closed boards accumulate in the account. That is pinned as a known wart, not a bug to "fix" later.
-- **Assert on exit codes, `success`, and the HTTP status substring** (e.g. `401` in "Request failed with status code 401"), not on full error message text — and note the pinned asymmetry: data commands exit **0** even when the payload is `success: false`; only `this.error` paths (`Missing authentication config.` → 1, failed `auth test` → 2) exit non-zero.
+- **Assert on exit codes, `success`, and the HTTP status substring** (e.g. `401` in "Request failed: 401 Unauthorized - ..."), not on full error message text — and note the pinned asymmetry: data commands exit **0** even when the payload is `success: false`; only `this.error` paths (`Missing authentication config.` → 1, failed `auth test` → 2) exit non-zero.
 
 CI runs the suite on demand only (`.github/workflows/run-e2e-tests.yml`, `workflow_dispatch` from the default branch), not per PR: runs share one live Trello account, and fork PRs cannot read secrets. It stays "blocked" until `TRELLO_API_KEY` and `TRELLO_SECRET` are added in repo Settings → Secrets and variables → Actions.

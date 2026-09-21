@@ -1,12 +1,16 @@
 import {type ApiResult} from '@hesed/plugin-lib'
 import {readFile} from 'node:fs/promises'
 import path from 'node:path'
-import {TrelloClient} from 'trello.js'
+import {createTrelloClient, type TrelloClient} from 'trello.js'
+import {type Dispatcher, getGlobalDispatcher, type ProxyAgent, setGlobalDispatcher} from 'undici'
 
-import {buildProxyRequestConfig} from '../proxy.js'
+import {buildProxyDispatcher} from '../proxy.js'
 
-/** trello.js pins its axios baseURL to this host, so proxy resolution is keyed off it. */
+/** trello.js prefixes every path with `${host}/1`, so proxy resolution is keyed off the bare origin. */
 const TRELLO_API_HOST = 'https://api.trello.com'
+
+/** How many links of an error's `cause` chain `handleError` appends before it stops. */
+const MAX_ERROR_CAUSE_DEPTH = 3
 
 export type Config = {
   apiKey: string
@@ -16,6 +20,8 @@ export type Config = {
 export class TrelloApi {
   private client?: TrelloClient
   private readonly config: Config
+  private dispatcher?: ProxyAgent
+  private previousDispatcher?: Dispatcher
 
   constructor(config: Config) {
     this.config = config
@@ -25,14 +31,28 @@ export class TrelloApi {
 
   async addCardAttachment(cardId: string, filePath: string): Promise<ApiResult> {
     try {
-      const client = this.getClient()
-      const file = await readFile(filePath)
-      const response = await client.cards.createCardAttachment({
-        file,
-        id: cardId,
-        name: path.basename(filePath),
-      })
-      return {data: response, success: true}
+      // trello.js v2 sends `file` as a query parameter, so its createCardAttachment can
+      // only attach a url — uploading local bytes means posting the multipart body here.
+      this.ensureProxyDispatcher()
+      const bytes = await readFile(filePath)
+      const name = path.basename(filePath)
+
+      const form = new FormData()
+      form.append('file', new File([bytes], name))
+      form.append('name', name)
+
+      const url = new URL(`/1/cards/${cardId}/attachments`, TRELLO_API_HOST)
+      url.searchParams.set('key', this.config.apiKey)
+      url.searchParams.set('token', this.config.apiToken)
+
+      const response = await fetch(url, {body: form, method: 'POST'})
+      if (!response.ok) {
+        // Same wording trello.js v2 uses, so callers see one error shape for every endpoint.
+        const text = await response.text()
+        throw new Error(`Request failed: ${response.status} ${response.statusText}${text ? ` - ${text}` : ''}`)
+      }
+
+      return {data: await response.json(), success: true}
     } catch (error: unknown) {
       return this.handleError(error)
     }
@@ -41,7 +61,7 @@ export class TrelloApi {
   async addCardComment(cardId: string, text: string): Promise<ApiResult> {
     try {
       const client = this.getClient()
-      const response = await client.cards.addCardComment({id: cardId, text})
+      const response = await client.cards.createCardComment({id: cardId, text})
       return {data: response, success: true}
     } catch (error: unknown) {
       return this.handleError(error)
@@ -51,7 +71,7 @@ export class TrelloApi {
   async archiveAllCardsInList(listId: string): Promise<ApiResult> {
     try {
       const client = this.getClient()
-      await client.lists.archiveAllCardsInList({id: listId})
+      await client.lists.archiveAllListCards({id: listId})
       return {data: true, success: true}
     } catch (error: unknown) {
       return this.handleError(error)
@@ -72,6 +92,17 @@ export class TrelloApi {
 
   clearClients(): void {
     this.client = undefined
+
+    if (!this.dispatcher) return
+
+    const {dispatcher, previousDispatcher} = this
+    this.dispatcher = undefined
+    this.previousDispatcher = undefined
+
+    if (previousDispatcher) setGlobalDispatcher(previousDispatcher)
+    // The proxy agent keeps its tunnelled sockets alive, which would hold the CLI open.
+    // Nothing is left to report a close failure to, so it is swallowed.
+    void dispatcher.close().catch(() => undefined)
   }
 
   async createBoard(name: string, desc?: string): Promise<ApiResult> {
@@ -91,7 +122,7 @@ export class TrelloApi {
         desc,
         idList,
         name,
-        pos: pos as 'bottom' | 'top' | undefined,
+        pos,
       })
       return {data: response, success: true}
     } catch (error: unknown) {
@@ -112,7 +143,7 @@ export class TrelloApi {
   async createChecklistItem(checklistId: string, name: string): Promise<ApiResult> {
     try {
       const client = this.getClient()
-      const response = await client.checklists.createChecklistCheckItems({id: checklistId, name})
+      const response = await client.checklists.createChecklistItem({id: checklistId, name})
       return {data: response, success: true}
     } catch (error: unknown) {
       return this.handleError(error)
@@ -135,7 +166,7 @@ export class TrelloApi {
       const response = await client.lists.createList({
         idBoard: boardId,
         name,
-        pos: pos as 'bottom' | 'top' | undefined,
+        pos,
       })
       return {data: response, success: true}
     } catch (error: unknown) {
@@ -188,7 +219,7 @@ export class TrelloApi {
   async deleteChecklistItem(checklistId: string, checkItemId: string): Promise<ApiResult> {
     try {
       const client = this.getClient()
-      await client.checklists.deleteChecklistCheckItem({id: checklistId, idCheckItem: checkItemId})
+      await client.checklists.deleteChecklistItem({id: checklistId, idCheckItem: checkItemId})
       return {data: true, success: true}
     } catch (error: unknown) {
       return this.handleError(error)
@@ -219,7 +250,7 @@ export class TrelloApi {
     try {
       const client = this.getClient()
       const response = filter
-        ? await client.boards.getBoardCardsFilter({filter, id: boardId})
+        ? await client.boards.getBoardCardsByFilter({filter, id: boardId})
         : await client.boards.getBoardCards({id: boardId})
       return {data: response, success: true}
     } catch (error: unknown) {
@@ -296,12 +327,15 @@ export class TrelloApi {
       return this.client
     }
 
-    const baseRequestConfig = buildProxyRequestConfig(TRELLO_API_HOST)
+    this.ensureProxyDispatcher()
 
-    this.client = new TrelloClient({
-      ...(baseRequestConfig && {baseRequestConfig}),
-      key: this.config.apiKey,
-      token: this.config.apiToken,
+    this.client = createTrelloClient({
+      apiKey: this.config.apiKey,
+      apiToken: this.config.apiToken,
+      // This CLI prints whatever Trello returns. Zod validation would strip every key the
+      // generated schemas do not name and turn any drift between spec and API into a
+      // ZodError, so responses are passed through unparsed instead.
+      skipParsing: true,
     })
 
     return this.client
@@ -383,8 +417,8 @@ export class TrelloApi {
   async searchCards(query: string, boardIds?: string): Promise<ApiResult> {
     try {
       const client = this.getClient()
-      const response = await client.search.getSearch({
-        idBoards: boardIds ? boardIds.split(',') : undefined,
+      const response = await client.search.search({
+        idBoards: boardIds,
         modelTypes: 'cards',
         query,
       })
@@ -431,8 +465,44 @@ export class TrelloApi {
 
   // ── Private helpers ───────────────────────────────────────────────
 
-  private handleError(error: unknown): ApiResult {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    return {error: errorMessage, success: false}
+  /**
+   * Installs the proxy dispatcher for Node's global fetch, which trello.js v2 and the
+   * attachment upload both go through. Undici resolves no proxy of its own, so without
+   * this every request would bypass HTTP(S)_PROXY.
+   */
+  private ensureProxyDispatcher(): void {
+    if (this.dispatcher) return
+
+    const dispatcher = buildProxyDispatcher(TRELLO_API_HOST)
+    if (!dispatcher) return
+
+    this.previousDispatcher = getGlobalDispatcher()
+    this.dispatcher = dispatcher
+    setGlobalDispatcher(dispatcher)
+  }
+
+  /**
+   * Flattens an error into the single string `ApiResult` carries.
+   *
+   * undici reports every transport failure — DNS, TLS, a proxy refusing CONNECT — as a
+   * bare `fetch failed` and hangs the real reason off `cause`, where axios used to state
+   * it inline. Appending the chain keeps those diagnosable. HTTP failures are unaffected:
+   * trello.js already spells the status out in the message.
+   *
+   * Protected rather than private so the error shape can be asserted directly in tests.
+   */
+  protected handleError(error: unknown): ApiResult {
+    if (!(error instanceof Error)) {
+      return {error: String(error), success: false}
+    }
+
+    const messages = [error.message]
+    let {cause} = error
+    for (let depth = 0; depth < MAX_ERROR_CAUSE_DEPTH && cause instanceof Error; depth++) {
+      if (cause.message && !messages.includes(cause.message)) messages.push(cause.message)
+      ;({cause} = cause)
+    }
+
+    return {error: messages.join(': '), success: false}
   }
 }
