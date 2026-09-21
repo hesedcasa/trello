@@ -12,6 +12,17 @@ const TRELLO_API_HOST = 'https://api.trello.com'
 /** How many links of an error's `cause` chain `handleError` appends before it stops. */
 const MAX_ERROR_CAUSE_DEPTH = 3
 
+/**
+ * The proxy agents of all live `TrelloApi` instances share one global dispatcher, so they
+ * coordinate through this stack: the newest active agent owns it, and a clearing instance
+ * hands the global back to the next-older agent — or to `preProxyDispatcher`, captured
+ * before the first install. Restoring a stale snapshot instead would clobber a newer
+ * instance's proxy or resurrect an already-closed agent. A dispatcher installed by
+ * something else (tests, an embedding process) is never touched.
+ */
+const activeProxyDispatchers: ProxyAgent[] = []
+let preProxyDispatcher: Dispatcher | undefined
+
 export type Config = {
   apiKey: string
   apiToken: string
@@ -21,7 +32,6 @@ export class TrelloApi {
   private client?: TrelloClient
   private readonly config: Config
   private dispatcher?: ProxyAgent
-  private previousDispatcher?: Dispatcher
 
   constructor(config: Config) {
     this.config = config
@@ -93,13 +103,25 @@ export class TrelloApi {
   clearClients(): void {
     this.client = undefined
 
-    if (!this.dispatcher) return
-
-    const {dispatcher, previousDispatcher} = this
+    const {dispatcher} = this
+    if (!dispatcher) return
     this.dispatcher = undefined
-    this.previousDispatcher = undefined
 
-    if (previousDispatcher) setGlobalDispatcher(previousDispatcher)
+    const index = activeProxyDispatchers.indexOf(dispatcher)
+    if (index !== -1) activeProxyDispatchers.splice(index, 1)
+
+    // Replace the global only while this instance's agent is still the active one;
+    // otherwise the global belongs to a newer proxy or to something external.
+    if (getGlobalDispatcher() === dispatcher) {
+      const next = activeProxyDispatchers.at(-1)
+      if (next) {
+        setGlobalDispatcher(next)
+      } else if (preProxyDispatcher) {
+        setGlobalDispatcher(preProxyDispatcher)
+        preProxyDispatcher = undefined
+      }
+    }
+
     // The proxy agent keeps its tunnelled sockets alive, which would hold the CLI open.
     // Nothing is left to report a close failure to, so it is swallowed.
     void dispatcher.close().catch(() => undefined)
@@ -476,7 +498,8 @@ export class TrelloApi {
     const dispatcher = buildProxyDispatcher(TRELLO_API_HOST)
     if (!dispatcher) return
 
-    this.previousDispatcher = getGlobalDispatcher()
+    if (activeProxyDispatchers.length === 0) preProxyDispatcher = getGlobalDispatcher()
+    activeProxyDispatchers.push(dispatcher)
     this.dispatcher = dispatcher
     setGlobalDispatcher(dispatcher)
   }

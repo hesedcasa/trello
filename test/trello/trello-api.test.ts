@@ -64,6 +64,80 @@ describe('TrelloApi', () => {
     })
   })
 
+  // Instances share one global dispatcher, so they must coordinate: clearing one may not
+  // clobber a newer instance's proxy or resurrect an already-closed agent.
+  describe('proxy dispatcher lifecycle', () => {
+    const proxyEnvKeys = ['ALL_PROXY', 'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY']
+
+    let baseDispatcher: Dispatcher
+    let savedProxyEnv: Record<string, string | undefined>
+
+    beforeEach(() => {
+      savedProxyEnv = {}
+      for (const key of proxyEnvKeys) {
+        savedProxyEnv[key] = process.env[key]
+        savedProxyEnv[key.toLowerCase()] = process.env[key.toLowerCase()]
+        delete process.env[key]
+        delete process.env[key.toLowerCase()]
+      }
+
+      baseDispatcher = getGlobalDispatcher()
+      // Unroutable port: the agents are only installed and closed, never used for traffic.
+      process.env.HTTPS_PROXY = 'http://127.0.0.1:1'
+    })
+
+    afterEach(() => {
+      for (const [key, value] of Object.entries(savedProxyEnv)) {
+        if (value === undefined) delete process.env[key]
+        else process.env[key] = value
+      }
+    })
+
+    it('leaves the newer proxy active when an older instance clears first', () => {
+      const older = new TrelloApi(mockConfig)
+      const newer = new TrelloApi(mockConfig)
+
+      older.getClient()
+      newer.getClient()
+      const newerDispatcher = getGlobalDispatcher()
+
+      older.clearClients()
+      expect(getGlobalDispatcher()).to.equal(newerDispatcher)
+
+      // The restore must land on the pre-proxy dispatcher, not the older closed agent.
+      newer.clearClients()
+      expect(getGlobalDispatcher()).to.equal(baseDispatcher)
+    })
+
+    it('reinstates the pre-proxy dispatcher only after the last proxy clears', () => {
+      const first = new TrelloApi(mockConfig)
+      const second = new TrelloApi(mockConfig)
+
+      first.getClient()
+      second.getClient()
+
+      second.clearClients()
+      expect(getGlobalDispatcher()).to.not.equal(baseDispatcher)
+
+      first.clearClients()
+      expect(getGlobalDispatcher()).to.equal(baseDispatcher)
+    })
+
+    it('leaves a dispatcher installed by something else in place', async () => {
+      const api = new TrelloApi(mockConfig)
+      api.getClient()
+
+      const external = new MockAgent()
+      setGlobalDispatcher(external)
+
+      api.clearClients()
+      expect(getGlobalDispatcher()).to.equal(external)
+
+      setGlobalDispatcher(baseDispatcher)
+      await external.close()
+    })
+  })
+
   describe('handleError', () => {
     let exposed: ExposedTrelloApi
 
