@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/hesedcasa/trello/compare/v0.7.1...v1.0.0) (2026-09-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade trello.js to v2 ([#70](https://github.com/hesedcasa/trello/issues/70))
+
+### 🎉 Features
+
+* upgrade trello.js to v2 ([#70](https://github.com/hesedcasa/trello/issues/70)) ([0390762](https://github.com/hesedcasa/trello/commit/0390762d5e2bf88430d97455cd27756ae16bfee6))
+
 ## [0.7.1](https://github.com/hesedcasa/trello/compare/v0.7.0...v0.7.1) (2026-08-13)
 
 
