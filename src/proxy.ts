@@ -1,34 +1,31 @@
-import {HttpsProxyAgent} from 'https-proxy-agent'
 import {getProxyForUrl} from 'proxy-from-env'
+import {ProxyAgent} from 'undici'
 
 /**
- * axios (trello.js's HTTP client) resolves HTTP(S)_PROXY env vars itself, but for
- * https:// targets it forwards a plain absolute-URI request instead of opening an
- * HTTP CONNECT tunnel — unlike fetch/undici. MITM-style proxies that require CONNECT
- * for https:// upstreams (e.g. Agent Vault) reject that with a 400. Building an
- * explicit httpsAgent that tunnels correctly, and disabling axios's own proxy
- * handling for the request, works around it.
+ * trello.js v2 dropped axios for the global `fetch`, and Node's fetch (undici) ignores
+ * the HTTP(S)_PROXY env vars entirely — no proxy, no CONNECT tunnel, just a direct
+ * connection that a network-isolated environment refuses. Resolving the proxy here and
+ * handing undici a `ProxyAgent` restores it, and because ProxyAgent opens a real CONNECT
+ * tunnel for https:// upstreams, MITM-style proxies that require one (e.g. Agent Vault)
+ * are satisfied too — that used to need an explicit workaround against axios.
  *
- * The workaround only applies to https:// targets. For http:// targets axios already
- * does the right thing (an absolute-URI request to the proxy), and it would consult
- * `httpAgent` rather than `httpsAgent` — so returning `proxy: false` there would
- * silently bypass the proxy instead of routing through it.
+ * `getProxyForUrl` applies NO_PROXY, so an excluded host yields `undefined` and the
+ * caller leaves undici's default dispatcher in place. http:// targets are proxied the
+ * same way; ProxyAgent forwards those as an absolute-URI request without tunnelling.
  */
-export function buildProxyRequestConfig(host: string): undefined | {httpsAgent: HttpsProxyAgent<string>; proxy: false} {
-  if (!isHttpsTarget(host)) return undefined
+export function buildProxyDispatcher(host: string): ProxyAgent | undefined {
+  if (!isAbsoluteUrl(host)) return undefined
 
   const proxyUrl = getProxyForUrl(host)
   if (!proxyUrl) return undefined
 
-  return {
-    httpsAgent: new HttpsProxyAgent(proxyUrl),
-    proxy: false,
-  }
+  return new ProxyAgent(proxyUrl)
 }
 
-function isHttpsTarget(host: string): boolean {
+function isAbsoluteUrl(host: string): boolean {
   try {
-    return new URL(host).protocol === 'https:'
+    const {protocol} = new URL(host)
+    return protocol === 'https:' || protocol === 'http:'
   } catch {
     return false
   }
