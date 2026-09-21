@@ -22,7 +22,7 @@ npx mocha --forbid-only "test/commands/trello/card/create.test.ts"
 
 ## Architecture
 
-This is an OCLIF v4 CLI (`trello` binary) organized into three layers:
+This is an OCLIF v5 CLI (`trello` binary) organized into three layers:
 
 **Commands** (`src/commands/trello/<resource>/<action>.ts`) — OCLIF `Command` subclasses. Each command:
 
