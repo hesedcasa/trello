@@ -136,6 +136,29 @@ describe('TrelloApi', () => {
       setGlobalDispatcher(baseDispatcher)
       await external.close()
     })
+
+    // The external dispatcher arrives between two proxy installs, so it is global when
+    // the newer instance installs; clearing that instance must undo to it, not to the
+    // older proxy.
+    it('restores a dispatcher installed externally between two proxies', async () => {
+      const older = new TrelloApi(mockConfig)
+      older.getClient()
+
+      const external = new MockAgent()
+      setGlobalDispatcher(external)
+
+      const newer = new TrelloApi(mockConfig)
+      newer.getClient()
+
+      newer.clearClients()
+      expect(getGlobalDispatcher()).to.equal(external)
+
+      older.clearClients()
+      expect(getGlobalDispatcher()).to.equal(external)
+
+      setGlobalDispatcher(baseDispatcher)
+      await external.close()
+    })
   })
 
   describe('handleError', () => {

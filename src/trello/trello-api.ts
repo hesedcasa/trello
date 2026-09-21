@@ -13,15 +13,13 @@ const TRELLO_API_HOST = 'https://api.trello.com'
 const MAX_ERROR_CAUSE_DEPTH = 3
 
 /**
- * The proxy agents of all live `TrelloApi` instances share one global dispatcher, so they
- * coordinate through this stack: the newest active agent owns it, and a clearing instance
- * hands the global back to the next-older agent — or to `preProxyDispatcher`, captured
- * before the first install. Restoring a stale snapshot instead would clobber a newer
- * instance's proxy or resurrect an already-closed agent. A dispatcher installed by
- * something else (tests, an embedding process) is never touched.
+ * Every proxy agent this module has installed, with the dispatcher that was global just
+ * before the install. Clearing an agent undoes to exactly what its own installation
+ * displaced — the pre-proxy dispatcher, a still-active proxy of another instance, or a
+ * dispatcher something else installed in between — so no instance can clobber a global
+ * it did not displace. Agents installed over a since-cleared agent inherit its target.
  */
-const activeProxyDispatchers: ProxyAgent[] = []
-let preProxyDispatcher: Dispatcher | undefined
+const installedProxyDispatchers: {agent: ProxyAgent; target: Dispatcher}[] = []
 
 export type Config = {
   apiKey: string
@@ -107,18 +105,14 @@ export class TrelloApi {
     if (!dispatcher) return
     this.dispatcher = undefined
 
-    const index = activeProxyDispatchers.indexOf(dispatcher)
-    if (index !== -1) activeProxyDispatchers.splice(index, 1)
-
-    // Replace the global only while this instance's agent is still the active one;
-    // otherwise the global belongs to a newer proxy or to something external.
-    if (getGlobalDispatcher() === dispatcher) {
-      const next = activeProxyDispatchers.at(-1)
-      if (next) {
-        setGlobalDispatcher(next)
-      } else if (preProxyDispatcher) {
-        setGlobalDispatcher(preProxyDispatcher)
-        preProxyDispatcher = undefined
+    const index = installedProxyDispatchers.findIndex(installed => installed.agent === dispatcher)
+    if (index !== -1) {
+      const [installed] = installedProxyDispatchers.splice(index, 1)
+      // The global is this agent's to undo only while nothing has replaced it since the
+      // install — otherwise it belongs to a newer proxy or to something external.
+      if (getGlobalDispatcher() === dispatcher) setGlobalDispatcher(installed.target)
+      for (const other of installedProxyDispatchers) {
+        if (other.target === dispatcher) other.target = installed.target
       }
     }
 
@@ -498,8 +492,7 @@ export class TrelloApi {
     const dispatcher = buildProxyDispatcher(TRELLO_API_HOST)
     if (!dispatcher) return
 
-    if (activeProxyDispatchers.length === 0) preProxyDispatcher = getGlobalDispatcher()
-    activeProxyDispatchers.push(dispatcher)
+    installedProxyDispatchers.push({agent: dispatcher, target: getGlobalDispatcher()})
     this.dispatcher = dispatcher
     setGlobalDispatcher(dispatcher)
   }
