@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/hesedcasa/trello/compare/v1.0.0...v1.0.1) (2026-10-05)
+
+
+### 🛠️ Fixes
+
+* **ci:** add e2e step timeouts and strip credentials from build and pack ([#78](https://github.com/hesedcasa/trello/issues/78)) ([2f4ffe6](https://github.com/hesedcasa/trello/commit/2f4ffe64746ab40db478507779d855fba7c5458f))
+
 ## [1.0.0](https://github.com/hesedcasa/trello/compare/v0.7.1...v1.0.0) (2026-09-21)
 
 
