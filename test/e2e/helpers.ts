@@ -20,7 +20,7 @@ export type CliResult = {
 /**
  * Reads the account credentials from the environment.
  *
- * Nothing in this repo loads .env, so these must already be exported.
+ * They come from Infisical, so run under `infisical run --`.
  *
  * TRELLO_SECRET holds the API token despite its name: it is the 64-hex-char
  * value Trello's authorize flow hands out, not the Power-Up admin page's
@@ -33,9 +33,7 @@ export function requireEnv(): {apiKey: string; apiToken: string} {
   const apiToken = process.env.TRELLO_SECRET
 
   if (!apiKey || !apiToken) {
-    throw new Error(
-      'Missing TRELLO_API_KEY or TRELLO_SECRET. Nothing in this repo loads .env — run: set -a; . ./.env; set +a',
-    )
+    throw new Error('Missing TRELLO_API_KEY or TRELLO_SECRET. Run under Infisical: infisical run -- npm run test:e2e')
   }
 
   return {apiKey, apiToken}

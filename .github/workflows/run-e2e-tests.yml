@@ -4,9 +4,9 @@ permissions: read-all
 
 # On demand from the default branch only. These tests create fixtures in one
 # live Trello account, so running them per pull request would let concurrent
-# runs collide, and fork PRs cannot read the secrets they need. The
-# default-branch gate also keeps a manual dispatch of an untrusted ref from
-# running repository code with the account credentials.
+# runs collide, and fork PRs cannot get the OIDC token they need for the
+# account credentials. The default-branch gate also keeps a manual dispatch of
+# an untrusted ref from running repository code with those credentials.
 on:
   workflow_dispatch:
 
@@ -15,13 +15,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  run-e2e-tests:
-    name: End-to-end tests against the Trello API
-    runs-on: ubuntu-latest
-    # Two legs (standalone CLI, then the same suite via sdkck) at up to 2
-    # minutes per test.
-    timeout-minutes: 45
+  # Everything that installs or builds runs here, with no OIDC permission: a
+  # compromised `npm ci` or `npm install sdkck` lifecycle script can neither
+  # read the account credentials nor request a token to fetch them itself.
+  build:
+    name: Build the CLI and install the sdkck host
+    # The test and sweep jobs need this one, so they are skipped with it.
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      sdkck-setup: ${{ steps.sdkck.outcome }}
     steps:
       - name: Check out repository
         # Pinned to a full SHA: these actions run before repository code gets
@@ -45,29 +51,25 @@ jobs:
       - name: Build the CLI
         run: npm run build
 
-      # The account credentials are scoped to the step that actually talks to
-      # Trello, so nothing before it — actions, `npm ci` lifecycle scripts,
-      # the build — ever has them in its environment.
-      - name: Run end-to-end tests
-        run: npm run e2e:mocha
-        env:
-          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
-          TRELLO_SECRET: ${{ secrets.TRELLO_SECRET }}
-          E2E_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
-
-      # Second leg: the same suite through the latest sdkck host CLI with this
-      # build packed and installed as its @hesed/trello plugin — covering the
-      # `prepack` artifacts (oclif.manifest.json, README) and plugin dispatch
-      # under a host. The plugin is installed before any `sdkck trello` call so
-      # sdkck's first-use auto-installer cannot fetch the published release
-      # over this build. The throwaway sdkck home (mktemp -d) keeps the
-      # install, config and caches out of the runner's real sdkck setup; the
-      # test side finds it via E2E_SDKCK_HOME.
+      # For the second leg: the same suite through the latest sdkck host CLI
+      # with this build packed and installed as its @hesed/trello plugin —
+      # covering the `prepack` artifacts (oclif.manifest.json, README) and
+      # plugin dispatch under a host. The plugin is installed before any
+      # `sdkck trello` call so sdkck's first-use auto-installer cannot fetch
+      # the published release over this build. The throwaway sdkck home keeps
+      # the install, config and caches out of the runner's real sdkck setup;
+      # the test side finds it via E2E_SDKCK_HOME. `continue-on-error`, so a
+      # broken sdkck release still lets the standalone leg run; the step's own
+      # timeout keeps a stalled install from hitting the job timeout, which
+      # `continue-on-error` cannot absorb and which would skip the upload.
       - name: Install the latest sdkck and the packed plugin
+        id: sdkck
+        continue-on-error: true
+        timeout-minutes: 5
         run: |
           npm install --no-save sdkck
-          home="$(mktemp -d)"
-          echo "E2E_SDKCK_HOME=$home" >> "$GITHUB_ENV"
+          home="$RUNNER_TEMP/sdkck-home"
+          mkdir -p "$home"
           # A `file:` URL is required: sdkck resolves any bare path containing
           # a slash as a GitHub org/repo. Packing into the throwaway home
           # keeps the tarball out of the workspace.
@@ -77,48 +79,151 @@ jobs:
           SDKCK_DATA_DIR="$home/data" \
             ./node_modules/.bin/sdkck plugins install "file:$home/$tgz"
 
-      - name: Run end-to-end tests via sdkck
-        run: npm run e2e:mocha
-        env:
-          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
-          TRELLO_SECRET: ${{ secrets.TRELLO_SECRET }}
-          E2E_HOST_CLI: sdkck
-          E2E_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
-          E2E_SDKCK_HOME: ${{ env.E2E_SDKCK_HOME }}
+      # Only the build outputs travel: the jobs that hold the credentials check
+      # out the repository themselves, so a lifecycle script that edits or
+      # adds a source, test or script file here cannot get it run there.
+      # node_modules and the sdkck plugin are still installed code — the tests
+      # cannot run without them — so this narrows, not removes, that trust.
+      # A tarball rather than the artifact's own zip, which drops executable
+      # bits and node_modules/.bin symlinks. Absolute paths are kept because
+      # the sdkck install records them, and hosted runners share one layout.
+      - name: Pack the build outputs and sdkck home
+        run: |
+          mkdir -p "$RUNNER_TEMP/sdkck-home"
+          tar -czf "$RUNNER_TEMP/e2e-workspace.tgz" -C / \
+            "${GITHUB_WORKSPACE#/}/node_modules" "${GITHUB_WORKSPACE#/}/dist" \
+            "${RUNNER_TEMP#/}/sdkck-home"
 
-  # A separate job, not a step with `if: always()`: a job cancelled by its
-  # timeout-minutes never starts its remaining steps, so an in-job fallback
-  # sweep would be skipped in exactly the scenario it exists for. A dependent
-  # job with `if: always()` still runs when the test job fails, times out, or
-  # is cancelled — only a skipped run (dispatch from a non-default branch)
-  # has nothing to reclaim. E2E_RUN_ID is derivable in any job of the same
-  # workflow run, which is what lets this sweep close the test job's board.
-  sweep-fixtures:
-    name: Sweep leftover fixtures
+      - name: Upload the workspace
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-workspace
+          path: ${{ runner.temp }}/e2e-workspace.tgz
+          retention-days: 1
+
+  run-e2e-tests:
+    name: End-to-end tests against the Trello API
+    needs: build
     runs-on: ubuntu-latest
-    needs: run-e2e-tests
-    if: always() && needs.run-e2e-tests.result != 'skipped'
-    timeout-minutes: 10
+    # Two legs (standalone CLI, then the same suite via sdkck) at up to 2
+    # minutes per test.
+    timeout-minutes: 45
+    # id-token lets the Infisical action exchange GitHub's OIDC token for the
+    # account credentials, so no Infisical secret is stored in the repo. Only
+    # this job and the sweep have it, and nothing in either installs packages.
+    permissions:
+      contents: read
+      id-token: write
     steps:
+      # A fresh checkout of the dispatched commit, not the build job's copy:
+      # see "Pack the build outputs and sdkck home".
       - name: Check out repository
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
 
+      - name: Download the build outputs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: e2e-workspace
+          path: ${{ runner.temp }}
+
+      # Extracts only the named members, so nothing else in the archive can
+      # land over the checkout.
+      - name: Unpack the build outputs and sdkck home
+        run: |
+          tar -xzf "$RUNNER_TEMP/e2e-workspace.tgz" -C / \
+            "${GITHUB_WORKSPACE#/}/node_modules" "${GITHUB_WORKSPACE#/}/dist" \
+            "${RUNNER_TEMP#/}/sdkck-home"
+          echo "E2E_SDKCK_HOME=$RUNNER_TEMP/sdkck-home" >> "$GITHUB_ENV"
+
       - name: Set up Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          cache: npm
           node-version-file: '.nvmrc'
 
-      - name: Install dependencies
-        run: npm ci
+      # The Infisical action exports the account credentials to $GITHUB_ENV,
+      # so every later step sees them; the steps before it never do.
+      - name: Fetch account credentials from Infisical
+        uses: Infisical/secrets-action@d2e351f16c6ca20d17c85e6c992e04bdeb64e87d # v1.0.18
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          env-slug: dev
+
+      - name: Run end-to-end tests
+        run: npm run e2e:mocha
+        env:
+          E2E_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Run end-to-end tests via sdkck
+        if: ${{ !cancelled() && needs.build.outputs.sdkck-setup == 'success' }}
+        run: npm run e2e:mocha
+        env:
+          E2E_HOST_CLI: sdkck
+          E2E_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+
+      # The build job tolerated a failed sdkck setup so the standalone leg
+      # could still run; fail here so the run doesn't pass without the sdkck
+      # leg.
+      - name: Fail if sdkck setup failed
+        if: ${{ always() && needs.build.outputs.sdkck-setup != 'success' }}
+        run: |
+          echo "::error::sdkck setup failed in the build job; sdkck leg skipped"
+          exit 1
+
+  # A separate job, not a step with `if: always()`: a job cancelled by its
+  # timeout-minutes never starts its remaining steps, so an in-job fallback
+  # sweep would be skipped in exactly the scenario it exists for. A dependent
+  # job with `if: always()` still runs when the test job fails, times out, or
+  # is cancelled — only a failed or skipped build has nothing to reclaim, since
+  # no test ran. E2E_RUN_ID is derivable in any job of the same workflow run,
+  # which is what lets this sweep close the test job's board. It reuses the
+  # build job's node_modules, so it installs nothing while holding id-token.
+  sweep-fixtures:
+    name: Sweep leftover fixtures
+    runs-on: ubuntu-latest
+    needs: [build, run-e2e-tests]
+    if: always() && needs.build.result == 'success'
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      # A fresh checkout of the dispatched commit, not the build job's copy:
+      # see "Pack the build outputs and sdkck home".
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Download the build outputs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: e2e-workspace
+          path: ${{ runner.temp }}
+
+      # The sweep runs from source via ts-node, so it needs node_modules only.
+      - name: Unpack node_modules
+        run: tar -xzf "$RUNNER_TEMP/e2e-workspace.tgz" -C / "${GITHUB_WORKSPACE#/}/node_modules"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Fetch account credentials from Infisical
+        uses: Infisical/secrets-action@d2e351f16c6ca20d17c85e6c992e04bdeb64e87d # v1.0.18
+        with:
+          method: oidc
+          identity-id: ${{ vars.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ vars.INFISICAL_PROJECT_SLUG }}
+          env-slug: dev
 
       # Closes this run's board (E2E_RUN_ID) and any fixture boards older
       # than the stale threshold.
       - name: Sweep leftover fixtures
         run: npm run e2e:sweep
         env:
-          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
-          TRELLO_SECRET: ${{ secrets.TRELLO_SECRET }}
           E2E_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}

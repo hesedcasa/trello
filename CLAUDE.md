@@ -73,17 +73,16 @@ await command.run()
 
 ## End-to-end tests
 
-`test/e2e/**` runs the built `bin/run.js` as a real subprocess against the live Trello API. `npm run test:e2e` then reruns the same suite through the latest sdkck host CLI with the current build packed and installed as its plugin — the host switch (`E2E_HOST_CLI=sdkck` + `E2E_SDKCK_HOME`, set by `scripts/e2e.sh` and the CI workflow) lives in `test/e2e/helpers.ts`; the plugin must be installed before any `sdkck trello` call, or sdkck auto-installs the published release, and the tarball must be a `file:` URL (bare paths read as GitHub org/repo). It is excluded from `npm test` and needs credentials exported first, because nothing in this repo loads `.env`:
+`test/e2e/**` runs the built `bin/run.js` as a real subprocess against the live Trello API. `npm run test:e2e` then reruns the same suite through the latest sdkck host CLI with the current build packed and installed as its plugin — the host switch (`E2E_HOST_CLI=sdkck` + `E2E_SDKCK_HOME`, set by `scripts/e2e.sh` and the CI workflow) lives in `test/e2e/helpers.ts`; the plugin must be installed before any `sdkck trello` call, or sdkck auto-installs the published release, and the tarball must be a `file:` URL (bare paths read as GitHub org/repo). It is excluded from `npm test`. **Credentials live in Infisical, not in `.env`** (never commit a token) — nothing in this repo loads `.env`, so they must be in the process environment. `.infisical.json` links the repo to the Infisical project; `scripts/e2e.sh` re-runs itself under `infisical run` when the credentials aren't exported — signed in by `infisical login`, or headless (an E2B sandbox) by a machine identity's `INFISICAL_UNIVERSAL_AUTH_CLIENT_ID`/`_CLIENT_SECRET`, with `--projectId` read from `.infisical.json` — but the other scripts need the wrapper:
 
 ```bash
-set -a; . ./.env; set +a
-npm run test:e2e              # build, run, then sweep
-npm run test:e2e -- --keep    # leave fixtures behind for inspection
-npm run e2e:mocha             # run without rebuilding
-npm run e2e:sweep             # close e2e boards idle for over an hour
+npm run test:e2e                               # build, run, then sweep
+npm run test:e2e -- --keep                     # leave fixtures behind for inspection
+infisical run -- npm run e2e:mocha             # run without rebuilding
+infisical run -- npm run e2e:sweep             # close e2e boards idle for over an hour
 ```
 
-`TRELLO_SECRET` in `.env` holds the API **token** (the 64-hex-char value from Trello's authorize flow) despite its name — the OAuth secret on the Power-Up admin page authenticates nothing and gets a 401.
+`TRELLO_SECRET` holds the API **token** (the 64-hex-char value from Trello's authorize flow) despite its name — the OAuth secret on the Power-Up admin page authenticates nothing and gets a 401.
 
 `e2e:sweep` also deletes the _current_ run's fixtures when `E2E_RUN_ID` is set — `scripts/e2e.sh` and the CI workflow both set it, so a mocha killed before its `after` hooks ran (a job timeout, a local Ctrl-C) still gets cleaned up instead of waiting an hour for the stale sweep to reach it.
 
@@ -95,4 +94,4 @@ Five rules specific to this suite:
 - **Boards cannot be deleted via the API, only closed.** Cleanup deletes the run board's cards and closes the board; closed boards accumulate in the account. That is pinned as a known wart, not a bug to "fix" later.
 - **Assert on exit codes, `success`, and the HTTP status substring** (e.g. `401` in "Request failed: 401 Unauthorized - ..."), not on full error message text — and note the pinned asymmetry: data commands exit **0** even when the payload is `success: false`; only `this.error` paths (`Missing authentication config.` → 1, failed `auth test` → 2) exit non-zero.
 
-CI runs the suite on demand only (`.github/workflows/run-e2e-tests.yml`, `workflow_dispatch` from the default branch), not per PR: runs share one live Trello account, and fork PRs cannot read secrets. It stays "blocked" until `TRELLO_API_KEY` and `TRELLO_SECRET` are added in repo Settings → Secrets and variables → Actions.
+CI runs the suite on demand only (`.github/workflows/run-e2e-tests.yml`, `workflow_dispatch` from the default branch), not per PR: runs share one live Trello account, and fork PRs cannot get the OIDC token. It is split so install scripts never hold OIDC: a `build` job (`contents: read`) runs `npm ci`, the build and the sdkck install and hands only `node_modules`, `dist` and the sdkck home on as a tarball artifact; the test and sweep jobs (`id-token: write`) check the commit out fresh — so an install script that edits tracked files cannot get them run with credentials — unpack those outputs over it, fetch `TRELLO_API_KEY` and `TRELLO_SECRET` from Infisical's `dev` environment over GitHub OIDC (`Infisical/secrets-action`), and install nothing. It needs the repository variables `INFISICAL_IDENTITY_ID` and `INFISICAL_PROJECT_SLUG`, and the Infisical machine identity's OIDC auth must allow `hesedcasa/trello`.
