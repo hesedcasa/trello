@@ -15,7 +15,7 @@
     "fs-extra": "^11.3.3",
     "proxy-from-env": "^2.1.0",
     "trello.js": "^2.2.0",
-    "undici": "^7.29.1"
+    "undici": "^8.11.2"
   },
   "devDependencies": {
     "@eslint/compat": "^2",
