@@ -1,5 +1,6 @@
 import {type ApiResult} from '@hesed/plugin-lib'
 import {expect} from 'chai'
+import {Buffer} from 'node:buffer'
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -250,22 +251,28 @@ describe('TrelloApi', () => {
 
     it('posts the file as multipart form data with the credentials in the query', async () => {
       let requestPath = ''
-      let form: FormData | undefined
+      let mockRequestBody: unknown
 
       agent
         .get('https://api.trello.com')
         .intercept({
-          body(value: unknown) {
-            form = value as FormData
-            return true
-          },
           method: 'POST',
           path(value: string) {
             requestPath = value
             return value.startsWith('/1/cards/card-1/attachments')
           },
         })
-        .reply(200, {id: 'attachment-1', name: 'fixture.txt'}, {headers: {'content-type': 'application/json'}})
+        .reply(
+          200,
+          // undici 8 delivers the request body to the reply handler as the serialized
+          // multipart byte stream (undici 7 handed the matcher the in-memory FormData),
+          // so the body shape is asserted from the captured stream below.
+          ({body}: {body?: unknown}) => {
+            mockRequestBody = body
+            return {id: 'attachment-1', name: 'fixture.txt'}
+          },
+          {headers: {'content-type': 'application/json'}},
+        )
 
       const result = await trelloApi.addCardAttachment('card-1', source)
 
@@ -275,10 +282,25 @@ describe('TrelloApi', () => {
       expect(query.get('key')).to.equal(mockConfig.apiKey)
       expect(query.get('token')).to.equal(mockConfig.apiToken)
 
-      expect(form?.get('name')).to.equal('fixture.txt')
-      const uploaded = form?.get('file') as File
-      expect(uploaded.name).to.equal('fixture.txt')
-      expect(await uploaded.text()).to.equal(FILE_BODY)
+      const chunks: Buffer[] = []
+      for await (const chunk of mockRequestBody as AsyncIterable<Uint8Array>) {
+        chunks.push(Buffer.from(chunk))
+      }
+
+      const wireBody = Buffer.concat(chunks).toString('utf8')
+
+      // The boundary is the wire's first line; each field's bytes sit between the blank
+      // line ending its part's headers and the `\r\n` framing the next boundary.
+      const field = (name: string): string | undefined =>
+        wireBody
+          .split(wireBody.slice(0, wireBody.indexOf('\r\n')), 3)
+          .find(part => part.includes(`name="${name}"`))
+          ?.split('\r\n\r\n', 2)[1]
+          ?.replace(/\r\n$/v, '')
+
+      expect(wireBody).to.contain('form-data; name="file"; filename="fixture.txt"')
+      expect(field('file')).to.equal(FILE_BODY)
+      expect(field('name')).to.equal('fixture.txt')
     })
 
     it('reports a rejected upload in the same shape trello.js uses', async () => {
