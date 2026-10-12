@@ -289,9 +289,18 @@ describe('TrelloApi', () => {
 
       const wireBody = Buffer.concat(chunks).toString('utf8')
 
+      // The boundary is the wire's first line; each field's bytes sit between the blank
+      // line ending its part's headers and the `\r\n` framing the next boundary.
+      const field = (name: string): string | undefined =>
+        wireBody
+          .split(wireBody.slice(0, wireBody.indexOf('\r\n')), 3)
+          .find(part => part.includes(`name="${name}"`))
+          ?.split('\r\n\r\n', 2)[1]
+          ?.replace(/\r\n$/v, '')
+
       expect(wireBody).to.contain('form-data; name="file"; filename="fixture.txt"')
-      expect(wireBody).to.contain(FILE_BODY)
-      expect(wireBody).to.match(/form-data; name="name"\r?\n\r?\nfixture\.txt/v)
+      expect(field('file')).to.equal(FILE_BODY)
+      expect(field('name')).to.equal('fixture.txt')
     })
 
     it('reports a rejected upload in the same shape trello.js uses', async () => {
