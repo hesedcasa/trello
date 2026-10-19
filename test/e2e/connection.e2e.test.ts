@@ -62,7 +62,8 @@ describe('e2e: connection', () => {
   // field on this.error paths), so there is nothing else stable to pin.
   it('errors on an unknown profile rather than falling back to the default', async () => {
     const {code, stdout} = await runCli(['trello', 'board', 'list', '--profile', 'nosuch'], configDir)
-    expect(code).to.equal(1)
+    // Pinned as observed: oclif's Command.error() exits 2 by default (the guard shared by ~30 data commands).
+    expect(code).to.equal(2)
 
     const payload = JSON.parse(stdout) as Failure
     expect(payload.error).to.contain('Missing authentication config')
